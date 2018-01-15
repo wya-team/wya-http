@@ -25,6 +25,7 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 		 * @param  {Func} uploadProgress 上传回调
 		 * @param  {Bool} noLoading 不执行loadFn
 		 * @param  {Str} requestType 请求类型 'json' | 'form-data'
+		 * @param  {Str} tipMsg 提示文字
 		 */
 		let {
 			url,
@@ -33,7 +34,8 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 			localData,
 			uploadProgress,
 			noLoading = false,
-			requestType
+			requestType,
+			tipMsg
 		} = _opts;
 		let method = type.toUpperCase(); // 默认转化为大写
 		if (!url && !localData) {
@@ -43,7 +45,7 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 			});
 			return;
 		}
-		!noLoading && loadingFn && loadingFn();
+		!noLoading && loadingFn && loadingFn(tipMsg);
 		let cgiSt = Date.now();
 		let onDataReturn = response => {
 			if (setCb) {
