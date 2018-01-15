@@ -123,7 +123,7 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 				let formData = new FormData();　　　　
 				formData.append('file', param['file']);　　　　
 				formData.append('bkn', bkn);
-				xhr.upload.onprogress = function(e) {
+				xhr.upload.onprogress = (e) => {
 					if (e.lengthComputable) {
 						uploadProgress(e.loaded, e.total);
 					}
@@ -140,7 +140,7 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 					});
 				}
 
-				window[param['callback']] = function(data) {
+				window[param['callback']] = (data) => {
 					onDataReturn(data);
 				};
 				if (paramArray.length > 0) {
