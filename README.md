@@ -1,6 +1,10 @@
 # wya-fetch
 [![npm][npm-image]][npm-url] [![changelog][changelog-image]][changelog-url]
 
+## 安装
+```
+npm install wya-fetch --save
+```
 ## API
 
 属性 | 说明 | 类型 | 默认值
