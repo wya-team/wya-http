@@ -5,6 +5,39 @@
 ```
 npm install wya-fetch --save
 ```
+## 用法例子
+```js
+// --- regiserNet.js ---
+import { ajaxFn } from 'wya-fetch';
+const loadingFn = (msg) => {
+	// loading
+};
+const loadedFn = () => {
+	// loaded
+};
+const setCb = () => {
+	// to do
+};
+const otherCb = () => {
+	// to do
+};
+const ajax = ajaxFn(loadingFn, loadedFn, setCb, otherCb);
+let net = {
+	ajax
+};
+export default net;
+
+// --- example ---
+import net from './regiserNet';
+const request = net.ajax({
+	url: `http://localhost:3000/api/test`
+}).then((res) => {
+	console.log(res);
+}).catch((res) => {
+	console.log(res);
+});
+// request.cancel();
+```
 ## API
 
 属性 | 说明 | 类型 | 默认值

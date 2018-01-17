@@ -127,7 +127,7 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 				formData.append('bkn', bkn);
 				xhr.upload.onprogress = (e) => {
 					if (e.lengthComputable) {
-						uploadProgress(e.loaded, e.total);
+						uploadProgress && uploadProgress(e.loaded, e.total);
 					}
 				};
 				xhr.open('POST', url);
