@@ -7,8 +7,28 @@
  * @param  {Object} opts   	参数
  * @return {type}
  */
+// class HotPomise extends Promise { // babel编译会出错，暂时不用
+// 	constructor(xhr, fn){
+// 		super(fn);
+// 		this.xhr = xhr;
+// 	}
+// 	cancel(){
+// 		this.xhr instanceof XMLHttpRequest && (
+// 			this.xhr.abort(), 
+// 			this.xhr = null, 
+// 			console.log(`XMLHttpRequest Abort`)
+// 		);
+// 	}
+// }
 const HotPromise = Promise;
+
 export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts => {
+	// 配置；
+	_opts = {
+		...opts,
+		..._opts	
+	};
+
 	let xhr;
 	HotPromise.prototype.cancel = () => {
 		xhr instanceof XMLHttpRequest && (
@@ -37,7 +57,6 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 			requestType,
 			tipMsg
 		} = _opts;
-		let method = type.toUpperCase(); // 默认转化为大写
 		if (!url && !localData) {
 			console.error('请求地址不存在');
 			reject({
@@ -46,7 +65,6 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 			return;
 		}
 		!noLoading && loadingFn && loadingFn(tipMsg);
-		let cgiSt = Date.now();
 		let onDataReturn = response => {
 			if (setCb) {
 				let isExit = setCb(response);
@@ -75,9 +93,10 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 			onDataReturn(localData);
 			return;
 		}
-		/**
-		 * 创建服务
-		 */
+		let cgiSt = Date.now();
+		let method = type.toUpperCase(); // 默认转化为大写
+		let isJson = requestType === 'json';
+		// 创建服务
 		xhr = new XMLHttpRequest();
 		try {
 			xhr.onreadystatechange = () => {
@@ -172,12 +191,15 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 				xhr.withCredentials = true; // 允许发送cookie
 				// 跨域资源请求会发生两次 一次是204 可以参考cors // 无视就好
 				xhr.setRequestHeader(
-					'Content-Type', requestType == 'json' ? `application/json;charset=utf-8` : `application/x-www-form-urlencoded`
+					'Content-Type', isJson ? `application/json;charset=utf-8` : `application/x-www-form-urlencoded`
 				);
 				xhr.setRequestHeader(
 					'X-Requested-With', 'XMLHttpRequest'
 				);
-				xhr.send(method === 'POST' ? paramArray.join('&') : '');
+
+				isJson
+					? xhr.send(req)
+					: xhr.send(method === 'POST' ? paramArray.join('&') : '');
 			}
 
 		} catch (e) {

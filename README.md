@@ -57,7 +57,7 @@ loadingFn | 请求时回调，`msg`由 `_opts.tipMsg`决定 | `(msg) => void` | 
 loadedFn | 请求完回调，可以把`loading`移除 | `() => void` | -
 setCb | 请求完回调执行，有response，返回true会中断执行执行 | `(response) => Bool` | -
 otherCb | `status` !1或!0，以外的情  | `(response, resolve, reject) => void` | -
-
+opts | 可以给下面的`_opts`设置些默认值 | obj | -
 
 - `ajax` - 参数说明
 
