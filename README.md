@@ -21,7 +21,8 @@ const setCb = () => {
 const otherCb = () => {
 	// to do
 };
-const ajax = ajaxFn(loadingFn, loadedFn, setCb, otherCb);
+const opts = {};
+const ajax = ajaxFn(loadingFn, loadedFn, setCb, otherCb, opts);
 let net = {
 	ajax
 };
@@ -65,11 +66,11 @@ opts | 可以给下面的`_opts`设置些默认值 | obj | -
 ---|---|---|---
 url | 请求地址`path` | str | -
 param | 参数 | obj | -
-type | 请求类型 | str | -
+type | 请求类型 | str | `GET`
 noLoading | 不执行`loadingFn`和`loadedFn` | str | -
 requestType | `form-data`	 `json` | str | `form-data`
-tipMsg | - | str | -
-uploadProgress | - | `() => void` | -
+tipMsg | `提示框` | str | `加载中...`
+uploadProgress | 上传进度回调 | `(loaded, total) => void` | -
 localData | 假如数据有缓存，不请求ajax | obj | -
 
 
