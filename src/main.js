@@ -32,6 +32,7 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 	let xhr;
 	HotPromise.prototype.cancel = () => {
 		xhr instanceof XMLHttpRequest && (
+			xhr.__ABORTED__ = true,
 			xhr.abort(), 
 			xhr = null, 
 			console.log(`XMLHttpRequest Abort`)
@@ -57,6 +58,7 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 			requestType,
 			tipMsg
 		} = _opts;
+		let messageError = '网络不稳定，请稍后重试';
 		if (!url && !localData) {
 			console.error('请求地址不存在');
 			reject({
@@ -78,7 +80,10 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 					return;
 				case 0:
 				case false:
-					reject(response);
+					reject({
+						msg: messageError,
+						...response
+					});
 					return;
 				default:
 					otherCb && otherCb(response, resolve, reject);
@@ -101,7 +106,6 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 		try {
 			xhr.onreadystatechange = () => {
 				if (xhr.readyState == 4) {
-
 					!noLoading && loadedFn && loadedFn(noLoading);
 					if (xhr.status >= 200 && xhr.status < 300) {
 						// 可以加上try-catch
@@ -109,20 +113,19 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 							let data = JSON.parse(xhr.responseText);
 							onDataReturn(data);
 						} catch (e) {
-							let msg = "网络不稳定，请稍后重试.";
 							reject({
 								retcode: xhr.status,
-								msg: msg
+								msg: `${messageError}.`
 							});
 						}
 					} else {
-						if (xhr.status === 0 ){
+						if (xhr.status === 0 && xhr.__ABORTED__ === true){
 							// 主动取消
 							return;
 						}
 						reject({
 							retcode: xhr.status,
-							msg: '网络不稳定，请稍后重试..'
+							msg: `${messageError}..`
 						});
 					}
 					xhr = null;
@@ -143,7 +146,7 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 			if (method === 'FORM') {
 				let formData = new FormData();　　　　
 				formData.append('file', param['file']);　　　　
-				formData.append('bkn', bkn);
+				// formData.append('file[]', file);
 				xhr.upload.onprogress = (e) => {
 					if (e.lengthComputable) {
 						uploadProgress && uploadProgress(e.loaded, e.total);
@@ -172,11 +175,13 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 				script.src = url;
 				head.appendChild(script);
 			} else {
-				let req = '';
+				let req = undefined;
 				switch (method){
 					case 'PUT':
 					case 'POST':
-						req = JSON.stringify(param);
+						req = typeof param === 'object'
+							? JSON.stringify(param)
+							: undefined;
 						break;
 					case 'DELETE':
 					case 'GET':
@@ -199,7 +204,7 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 
 				isJson
 					? xhr.send(req)
-					: xhr.send(method === 'POST' ? paramArray.join('&') : '');
+					: xhr.send(method === 'POST' ? paramArray.join('&') : undefined);
 			}
 
 		} catch (e) {

@@ -6,8 +6,8 @@ const request = ajax({
 }).catch((res) => {
 	console.log(res);
 });
-setTimeout(() => {
-	request.cancel();
-}, Math.random() * 700);
+// setTimeout(() => {
+// 	request.cancel();
+// }, Math.random() * 700);
 
 

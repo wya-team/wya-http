@@ -1,4 +1,9 @@
 # 历史版本
+### 0.1.5 (2018-01-22)
+
+* 处理`Android Native`, `''` -> `undefined`, 后者`undefined`更加友好；
+* 添加主动取消`xhr.__ABORTED__ = true`
+
 ### 0.1.3 (2018-01-15)
 
 * 使用`XMLHttpRequest`取代`fetch`, 方便跨域
