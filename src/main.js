@@ -45,7 +45,7 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 		 * @param  {Object} type 请求类型
 		 * @param  {Func} uploadProgress 上传回调
 		 * @param  {Bool} noLoading 不执行loadFn
-		 * @param  {Str} requestType 请求类型 'json' | 'form-data'
+		 * @param  {Str} requestType 请求类型 'json' | 'form-data' | 'form-data:json'
 		 * @param  {Str} tipMsg 提示文字
 		 */
 		let {
@@ -101,6 +101,7 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 		let cgiSt = Date.now();
 		let method = type.toUpperCase(); // 默认转化为大写
 		let isJson = requestType === 'json';
+		let isFormDataJson = requestType === 'form-data:json';
 		// 创建服务
 		xhr = new XMLHttpRequest();
 		try {
@@ -204,7 +205,12 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 
 				isJson
 					? xhr.send(req)
-					: xhr.send(method === 'POST' ? paramArray.join('&') : undefined);
+					: xhr.send(
+						method === 'POST' 
+							? isFormDataJson 
+								? `data=${JSON.stringify(param)}` // 业务需要
+								: paramArray.join('&') 
+							: undefined);
 			}
 
 		} catch (e) {
