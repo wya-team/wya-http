@@ -70,8 +70,10 @@ type | 请求类型 | str | `GET`
 noLoading | 不执行`loadingFn`和`loadedFn` | str | -
 requestType | `form-data`、`json`、`form-data:json`(POST方式以 `data: JSON.stringify(data)`传递) | str | `form-data`
 tipMsg | `提示框` | str | `加载中...`
-uploadProgress | 上传进度回调 | `(loaded, total) => void` | -
+onBefore | 在调用前改变`opts` | `(opts) => opts` | -
+onProgress | 上传进度回调 | `(e) => void` | -
 localData | 假如数据有缓存，不请求ajax | obj | -
+
 
 
 <!--  以下内容无视  -->

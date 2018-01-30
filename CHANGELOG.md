@@ -1,4 +1,8 @@
 # 历史版本
+### 0.1.12 (2018-01-23)
+
+* 增加API`onBefore`, 类型`func`, 返回值必须是`Promise`; `async/await`去兼容RN/AsyncStorage返回是Promise的情况；即`(opts) => Promise`
+
 ### 0.1.8 (2018-01-23)
 
 * 给`requestType`添加选项'form-data:json',`form-data`形式传递的数据再包装成 `data: JSON.stringify(data)`

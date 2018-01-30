@@ -38,25 +38,37 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 			console.log(`XMLHttpRequest Abort`)
 		);
 	};
-	return new HotPromise((resolve, reject) => {
+	return new HotPromise(async (resolve, reject) => {
 		/**
 		 * @param  {String} url 服务地址
 		 * @param  {Object} param 参数
 		 * @param  {Object} type 请求类型
-		 * @param  {Func} uploadProgress 上传回调
+		 * @param  {Func} onProgress 上传回调
 		 * @param  {Bool} noLoading 不执行loadFn
 		 * @param  {Str} requestType 请求类型 'json' | 'form-data' | 'form-data:json'
 		 * @param  {Str} tipMsg 提示文字
 		 */
+		const { onBefore } = _opts;
+		// url配置
+		if (onBefore && typeof onBefore === 'function') {
+			try {
+				_opts = await onBefore(_opts) || _opts;
+			} catch (e) {
+				console.log(e);
+			}
+			
+		}
+		// -- end -- 
 		let {
 			url,
 			param,
 			type = 'GET',
 			localData,
-			uploadProgress,
+			onProgress,
 			noLoading = false,
 			requestType,
-			tipMsg
+			tipMsg,
+			headers
 		} = _opts;
 		let messageError = '网络不稳定，请稍后重试';
 		if (!url && !localData) {
@@ -72,7 +84,25 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 				let isExit = setCb(response);
 				if (isExit) return;
 			}
-			// 正常流程
+			// 图片上传时候，调用外部，不太一样
+			if (response.state) {
+				if (response.state === 'SUCCESS') {
+					resolve({
+						status: 1,
+						data: {
+							...response
+						}
+					});
+				} else {
+					reject({
+						msg: response.state,
+						...response
+					});
+				}
+				return;
+			}
+
+			// 正常业务流程
 			switch (response.status) {
 				case 1:
 				case true:
@@ -143,18 +173,34 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 					paramArray.push(key + '=' + encodeURIComponent(param[key]));
 				}
 			}
-
+			
 			if (method === 'FORM') {
-				let formData = new FormData();　　　　
-				formData.append('file', param['file']);　　　　
-				// formData.append('file[]', file);
+				let formData = new FormData();
+				
+				// 参数
+				if (param.data) {
+					Object.keys(param.data).map(key => {
+						formData.append(key, param.data[key]);
+					});
+				}
+				
+				// 文件　　
+				formData.append(param['filename'] || 'Filedata', param['file']);
+
 				xhr.upload.onprogress = (e) => {
-					if (e.lengthComputable) {
-						uploadProgress && uploadProgress(e.loaded, e.total);
+					// e.lengthComputable
+					if (e.total > 0) {
+						e._percent = e.loaded / e.total * 100;
+						e.percent = (e._percent).toFixed(2);
 					}
+					onProgress && onProgress(e);
 				};
 				xhr.open('POST', url);
-				xhr.withCredentials = true;　　　　
+				xhr.withCredentials = true;
+				
+				xhr.setRequestHeader(
+					'X-Requested-With', 'XMLHttpRequest'
+				);
 				xhr.send(formData);
 			} else if (method === 'JSONP') {
 				method = 'GET';
@@ -202,7 +248,11 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 				xhr.setRequestHeader(
 					'X-Requested-With', 'XMLHttpRequest'
 				);
-
+				for (const h in headers) {
+					if (headers.hasOwnProperty(h) && headers[h] !== null) {
+						xhr.setRequestHeader(h, headers[h]);
+					}
+				}
 				isJson
 					? xhr.send(req)
 					: xhr.send(
