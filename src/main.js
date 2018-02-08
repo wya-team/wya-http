@@ -258,7 +258,7 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 					: xhr.send(
 						method === 'POST' 
 							? isFormDataJson 
-								? `data=${JSON.stringify(param)}` // 业务需要
+								? `data=${encodeURIComponent(JSON.stringify(param))}` // 业务需要
 								: paramArray.join('&') 
 							: undefined);
 			}
