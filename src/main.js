@@ -48,7 +48,7 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 		 * @param  {Str} requestType 请求类型 'json' | 'form-data' | 'form-data:json'
 		 * @param  {Str} tipMsg 提示文字
 		 */
-		const { onBefore } = _opts;
+		const { onBefore, onAfter } = _opts;
 		// url配置
 		if (onBefore && typeof onBefore === 'function') {
 			try {
@@ -79,7 +79,15 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 			return;
 		}
 		!noLoading && loadingFn && loadingFn(tipMsg);
-		let onDataReturn = response => {
+		let onDataReturn = async (response) => {
+			if (onAfter && typeof onAfter === 'function') {
+				try {
+					response = await onAfter(response) || response;
+				} catch (e) {
+					return;
+				}
+				
+			}
 			if (setCb) {
 				let isExit = setCb(response);
 				if (isExit) return;
