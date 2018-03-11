@@ -1,6 +1,8 @@
 # wya-fetch
 [![npm][npm-image]][npm-url] [![changelog][changelog-image]][changelog-url]
 
+## [Demo](https://wya-team.github.io/wya-webpack/demo/index.html)
+
 ## 安装
 ```
 npm install wya-fetch --save
