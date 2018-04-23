@@ -191,9 +191,13 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 						formData.append(key, param.data[key]);
 					});
 				}
-				
+				let fileType = Object.prototype.toString.call(param['file']);
+				let name = undefined;
+				if (fileType === '[object Blob]') {
+					name = param['file'].name || undefined;
+				}
 				// 文件　　
-				formData.append(param['filename'] || 'Filedata', param['file']);
+				formData.append(param['filename'] || 'Filedata', param['file'], name);
 
 				xhr.upload.onprogress = (e) => {
 					// e.lengthComputable
