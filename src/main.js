@@ -14,8 +14,8 @@
 // 	}
 // 	cancel(){
 // 		this.xhr instanceof XMLHttpRequest && (
-// 			this.xhr.abort(), 
-// 			this.xhr = null, 
+// 			this.xhr.abort(),
+// 			this.xhr = null,
 // 			console.log(`XMLHttpRequest Abort`)
 // 		);
 // 	}
@@ -26,15 +26,15 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 	// 配置；
 	_opts = {
 		...opts,
-		..._opts	
+		..._opts
 	};
 
 	let xhr;
 	HotPromise.prototype.cancel = () => {
 		xhr instanceof XMLHttpRequest && (
 			xhr.__ABORTED__ = true,
-			xhr.abort(), 
-			xhr = null, 
+			xhr.abort(),
+			xhr = null,
 			console.log(`XMLHttpRequest Abort`)
 		);
 	};
@@ -56,9 +56,9 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 			} catch (e) {
 				console.log(e);
 			}
-			
+
 		}
-		// -- end -- 
+		// -- end --
 		let {
 			url,
 			param,
@@ -68,7 +68,8 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 			noLoading = false,
 			requestType,
 			tipMsg,
-			headers
+			headers,
+			async = true
 		} = _opts;
 		let messageError = '网络不稳定，请稍后重试';
 		if (!url && !localData) {
@@ -86,7 +87,7 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 				} catch (e) {
 					return;
 				}
-				
+
 			}
 			if (setCb) {
 				let isExit = setCb(response);
@@ -181,10 +182,10 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 					paramArray.push(key + '=' + encodeURIComponent(param[key]));
 				}
 			}
-			
+
 			if (method === 'FORM') {
 				let formData = new FormData();
-				
+
 				// 参数
 				if (param.data) {
 					Object.keys(param.data).map(key => {
@@ -209,7 +210,7 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 				};
 				xhr.open('POST', url);
 				xhr.withCredentials = true;
-				
+
 				xhr.setRequestHeader(
 					'X-Requested-With', 'XMLHttpRequest'
 				);
@@ -251,7 +252,7 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 					default:
 						break;
 				}
-				xhr.open(method, url, true);
+				xhr.open(method, url, async);
 				xhr.withCredentials = true; // 允许发送cookie
 				// 跨域资源请求会发生两次 一次是204 可以参考cors // 无视就好
 				xhr.setRequestHeader(
@@ -268,10 +269,10 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 				isJson
 					? xhr.send(req)
 					: xhr.send(
-						method === 'POST' 
-							? isFormDataJson 
+						method === 'POST'
+							? isFormDataJson
 								? `data=${encodeURIComponent(JSON.stringify(param))}` // 业务需要
-								: paramArray.join('&') 
+								: paramArray.join('&')
 							: undefined);
 			}
 

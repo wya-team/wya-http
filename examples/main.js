@@ -12,12 +12,16 @@ const request = ajax({
 }).catch((res) => {
 	console.log(res);
 });
+
+console.log('====================================');
+console.log(222);
+console.log('====================================');
 // setTimeout(() => {
 // 	request.cancel();
 // }, Math.random() * 700);
 
 
-// 
+//
 
 
 // document.querySelector('input').addEventListener('change', (e) => {
@@ -35,7 +39,7 @@ const request = ajax({
 // 				...opts,
 // 				url: url += (url.indexOf('?') > -1 ? '&' : '?') + paramArray.join('&')
 // 			});
-			
+
 // 		},
 // 		onProgress: (e) => {
 // 			console.log(e.percent);

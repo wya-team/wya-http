@@ -69,10 +69,12 @@ opts | 可以给下面的`_opts`设置些默认值 | obj | -
 url | 请求地址`path` | str | -
 param | 参数 | obj | -
 type | 请求类型 | str | `GET`
+async | 请求是否是异步 | bool | `true`
 noLoading | 不执行`loadingFn`和`loadedFn` | str | -
 requestType | `form-data`、`json`、`form-data:json`(POST方式以 `data: JSON.stringify(data)`传递) | str | `form-data`
 tipMsg | `提示框` | str | `加载中...`
 onBefore | 在调用前改变`opts` | `(opts) => opts` | -
+onAfter | 在调用后改变`response` | `(response) => void` | -
 onProgress | 上传进度回调 | `(e) => void` | -
 localData | 假如数据有缓存，不请求ajax | obj | -
 
