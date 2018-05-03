@@ -70,6 +70,7 @@ url | 请求地址`path` | str | -
 param | 参数 | obj | -
 type | 请求类型 | str | `GET`
 async | 请求是否是异步 | bool | `true`
+restful | 是否是`restful`, 主动提取`id`字段 | bool | `false`
 noLoading | 不执行`loadingFn`和`loadedFn` | str | -
 requestType | `form-data`、`json`、`form-data:json`(POST方式以 `data: JSON.stringify(data)`传递) | str | `form-data`
 tipMsg | `提示框` | str | `加载中...`

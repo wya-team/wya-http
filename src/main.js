@@ -69,9 +69,9 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 			requestType,
 			tipMsg,
 			headers,
-			async = true
+			async = true,
+			restful = false
 		} = _opts;
-		let messageError = '网络不稳定，请稍后重试';
 		if (!url && !localData) {
 			console.error('请求地址不存在');
 			reject({
@@ -79,6 +79,20 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 			});
 			return;
 		}
+
+		let messageError = '网络不稳定，请稍后重试';
+		let cgiSt = Date.now();
+		let method = type.toUpperCase(); // 默认转化为大写
+		let isJson = requestType === 'json';
+		let isFormDataJson = requestType === 'form-data:json';
+
+		// restful
+		if (restful && method !== 'POST' && param && param.id) {
+			let urlArr = url.split('?');
+			url = `${urlArr[0]}/${param.id}${urlArr[1] ? `?${urlArr[1]}` : ''}`;
+			delete param['id'];
+		}
+
 		!noLoading && loadingFn && loadingFn(tipMsg);
 		let onDataReturn = async (response) => {
 			if (onAfter && typeof onAfter === 'function') {
@@ -137,10 +151,6 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 			onDataReturn(localData);
 			return;
 		}
-		let cgiSt = Date.now();
-		let method = type.toUpperCase(); // 默认转化为大写
-		let isJson = requestType === 'json';
-		let isFormDataJson = requestType === 'form-data:json';
 		// 创建服务
 		xhr = new XMLHttpRequest();
 		try {
@@ -235,13 +245,19 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 				script.src = url;
 				head.appendChild(script);
 			} else {
-				let req = undefined;
+				let dataForXHRSend = undefined;
 				switch (method){
 					case 'PUT':
 					case 'POST':
-						req = typeof param === 'object'
-							? JSON.stringify(param)
-							: undefined;
+						if (isJson) {
+							dataForXHRSend = typeof param === 'object'
+								? JSON.stringify(param)
+								: undefined;
+						} else {
+							dataForXHRSend = isFormDataJson
+								? `data=${encodeURIComponent(JSON.stringify(param))}` // 业务需要
+								: paramArray.join('&');
+						}
 						break;
 					case 'DELETE':
 					case 'GET':
@@ -266,14 +282,7 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 						xhr.setRequestHeader(h, headers[h]);
 					}
 				}
-				isJson
-					? xhr.send(req)
-					: xhr.send(
-						method === 'POST'
-							? isFormDataJson
-								? `data=${encodeURIComponent(JSON.stringify(param))}` // 业务需要
-								: paramArray.join('&')
-							: undefined);
+				xhr.send(dataForXHRSend);
 			}
 
 		} catch (e) {
