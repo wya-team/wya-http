@@ -147,7 +147,7 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 		 * 如果本地已经从别的地方获取到数据，就不用请求了
 		 */
 		if (localData) {
-			!noLoading && loadedFn && loadedFn();
+			!noLoading && !localData && loadedFn && loadedFn();
 			onDataReturn(localData);
 			return;
 		}
@@ -156,7 +156,7 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 		try {
 			xhr.onreadystatechange = () => {
 				if (xhr.readyState == 4) {
-					!noLoading && loadedFn && loadedFn(noLoading);
+					!noLoading && !localData && loadedFn && loadedFn(noLoading);
 					if (xhr.status >= 200 && xhr.status < 300) {
 						// 可以加上try-catch
 						try {
