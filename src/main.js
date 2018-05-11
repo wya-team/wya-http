@@ -93,7 +93,7 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 			delete param['id'];
 		}
 
-		!noLoading && loadingFn && loadingFn(tipMsg);
+		!noLoading && !localData && loadingFn && loadingFn(tipMsg);
 		let onDataReturn = async (response) => {
 			if (onAfter && typeof onAfter === 'function') {
 				try {
