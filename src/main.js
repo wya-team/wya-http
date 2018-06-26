@@ -186,8 +186,8 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 				paramString = '';
 			for (let key in param) {
 				/**
-						 * 过滤掉值为null,undefined,''情况
-						 */
+				 * 过滤掉值为null,undefined,''情况
+				 */
 				if (param[key] || param[key] === false || param[key] === 0) {
 					paramArray.push(key + '=' + encodeURIComponent(param[key]));
 				}
@@ -203,12 +203,12 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 					});
 				}
 				let fileType = Object.prototype.toString.call(param['file']);
-				let name = undefined;
+				let fileName = undefined;
 				if (fileType === '[object Blob]') {
-					name = param['file'].name || name;
+					fileName = param['file'].name || fileName;
 				}
-				// 文件　　
-				formData.append(param['filename'] || 'Filedata', param['file'], name);
+				// 文件　param['name'] || param['filename'] 为了兼容历史问题
+				formData.append(param['name'] || param['filename'] || 'Filedata', param['file'], fileName);
 
 				xhr.upload.onprogress = (e) => {
 					// e.lengthComputable
