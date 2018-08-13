@@ -1,7 +1,15 @@
 # 历史版本
+### 0.2.0 (2018-08-06)
+
+* 增加API`emptyStr`
+* 增加API`restful`
+* 增加API`async`
+* 去除API`setCb`
+
 ### 0.1.12 (2018-01-23)
 
 * 增加API`onBefore`, 类型`func`, 返回值必须是`Promise`; `async/await`去兼容RN/AsyncStorage返回是Promise的情况；即`(opts) => Promise`
+* 增加API`onAfter`, 类型`func`, 返回值必须是`Promise`;
 
 ### 0.1.8 (2018-01-23)
 

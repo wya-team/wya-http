@@ -3,6 +3,8 @@
 
 ## [Demo](https://wya-team.github.io/wya-fetch/demo/index.html)
 
+> 0.2.0 去除了`setCb`
+
 ## 安装
 ```
 npm install wya-fetch --save
@@ -17,14 +19,11 @@ const loadingFn = (msg) => {
 const loadedFn = () => {
 	// loaded
 };
-const setCb = () => {
-	// to do
-};
 const otherCb = () => {
 	// to do
 };
 const opts = {};
-const ajax = ajaxFn(loadingFn, loadedFn, setCb, otherCb, opts);
+const ajax = ajaxFn(loadingFn, loadedFn, otherCb, opts);
 let net = {
 	ajax
 };
@@ -58,26 +57,32 @@ ajax = ajaxFn();
 ---|---|---|---
 loadingFn | 请求时回调，`msg`由 `_opts.tipMsg`决定 | `(msg) => void` | -
 loadedFn | 请求完回调，可以把`loading`移除 | `() => void` | -
-setCb | 请求完回调执行，有response，返回true会中断执行执行 | `(response) => Bool` | -
 otherCb | `status` !1或!0，以外的情  | `(response, resolve, reject) => void` | -
 opts | 可以给下面的`_opts`设置些默认值 | obj | -
 
-- `ajax` - 参数说明
+- `ajax` - 参数说明 - 属性
 
 属性 | 说明 | 类型 | 默认值
 ---|---|---|---
 url | 请求地址`path` | str | -
-param | 参数 | obj | -
 type | 请求类型 | str | `GET`
+param | 参数 | obj | -
 async | 请求是否是异步 | bool | `true`
 restful | 是否是`restful`, 主动提取`id`字段 | bool | `false`
-noLoading | 不执行`loadingFn`和`loadedFn` | str | -
+emptyStr | 是否接收空字符串 | bool | `false`
 requestType | `form-data`、`json`、`form-data:json`(POST方式以 `data: JSON.stringify(data)`传递) | str | `form-data`
 tipMsg | `提示框` | str | `加载中...`
-onBefore | 在调用前改变`opts` | `(opts) => opts` | -
-onAfter | 在调用后改变`response` | `(response) => void` | -
-onProgress | 上传进度回调 | `(e) => void` | -
+noLoading | 不执行`loadingFn`和`loadedFn` | str | -
 localData | 假如数据有缓存，不请求ajax | obj | -
+
+ 
+- `ajax` - 参数说明 - 方法
+
+属性 | 说明 | 类型 | 默认值
+---|---|---|---
+onBefore | 在调用前改变`opts` | `(opts) => Promise` | -
+onAfter | 在调用后改变`response` | `(response) => Promise` | -
+onProgress | 上传进度回调 | `(e) => void` | -
 
 
 

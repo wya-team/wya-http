@@ -21,8 +21,7 @@
 // 	}
 // }
 const HotPromise = Promise;
-
-export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts => {
+export const ajaxFn = (loadingFn, loadedFn, otherCb, opts = {}) => _opts => {
 	// 配置；
 	_opts = {
 		...opts,
@@ -70,7 +69,8 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 			tipMsg,
 			headers,
 			async = true,
-			restful = false
+			restful = false,
+			emptyStr = false,
 		} = _opts;
 		if (!url && !localData) {
 			console.error('请求地址不存在');
@@ -102,10 +102,6 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 					return;
 				}
 
-			}
-			if (setCb) {
-				let isExit = setCb(response);
-				if (isExit) return;
 			}
 			// 图片上传时候，调用外部，不太一样
 			if (response.state) {
@@ -186,9 +182,9 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 				paramString = '';
 			for (let key in param) {
 				/**
-				 * 过滤掉值为null,undefined,''情况
+				 * 过滤掉值为null, undefined, ''情况
 				 */
-				if (param[key] || param[key] === false || param[key] === 0) {
+				if (param[key] || param[key] === false || param[key] === 0  || (emptyStr && param[key] === '') ) {
 					paramArray.push(key + '=' + encodeURIComponent(param[key]));
 				}
 			}
@@ -224,6 +220,13 @@ export const ajaxFn = (loadingFn, loadedFn, setCb, otherCb, opts = {}) => _opts 
 				xhr.setRequestHeader(
 					'X-Requested-With', 'XMLHttpRequest'
 				);
+
+				for (const h in headers) {
+					if (headers.hasOwnProperty(h) && headers[h] !== null) {
+						xhr.setRequestHeader(h, headers[h]);
+					}
+				}
+
 				xhr.send(formData);
 			} else if (method === 'JSONP') {
 				method = 'GET';
