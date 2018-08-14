@@ -1,6 +1,6 @@
 {
     "name": "wya-fetch",
-    "version": "0.2.0",
+    "version": "0.3.1",
     "description": "wya-fetch for js",
     "main": "lib/main.js",
     "files": [

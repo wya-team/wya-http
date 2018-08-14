@@ -3,7 +3,7 @@
 
 ## [Demo](https://wya-team.github.io/wya-fetch/demo/index.html)
 
-> 0.2.0 去除了`setCb`
+> 0.3.0 改写了`ajaxFn` 调用，默认使用`defaultOptions`
 
 ## 安装
 ```
@@ -19,11 +19,17 @@ const loadingFn = (msg) => {
 const loadedFn = () => {
 	// loaded
 };
-const otherCb = () => {
+const otherFn = () => {
 	// to do
 };
-const opts = {};
-const ajax = ajaxFn(loadingFn, loadedFn, otherCb, opts);
+const defaultOptions = {
+	// onLoading: loadingFn,
+	// onLoaded: loadedFn,
+	// onBefore: beforeFn,
+	// onAfter: afterFn,
+	// onOther: otherFn,
+};
+const ajax = ajaxFn(defaultOptions);
 let net = {
 	ajax
 };
@@ -44,8 +50,8 @@ const request = net.ajax({
 
 属性 | 说明 | 类型 | 默认值
 ---|---|---|---
-ajaxFn | 注册函数 | `(loadingFn, loadedFn, setCb, otherCb, opts = {}) => Func` | -
-ajax | ajax函数，请求后可用`.cancel()`取消请求 | `(_opts = {}) => HotPromise` | -
+ajaxFn | 注册函数 | `(loadingFn, loadedFn, setCb, otherCb, defaultOptions = {}) => Func` | -
+ajax | ajax函数，请求后可用`.cancel()`取消请求 | `(userOptions = {}) => HotPromise` | -
 
 ```js
 ajax = ajaxFn();
@@ -55,10 +61,7 @@ ajax = ajaxFn();
 
 属性 | 说明 | 类型 | 默认值
 ---|---|---|---
-loadingFn | 请求时回调，`msg`由 `_opts.tipMsg`决定 | `(msg) => void` | -
-loadedFn | 请求完回调，可以把`loading`移除 | `() => void` | -
-otherCb | `status` !1或!0，以外的情  | `(response, resolve, reject) => void` | -
-opts | 可以给下面的`_opts`设置些默认值 | obj | -
+defaultOptions | 可以给下面的`userOptions`设置些默认值 | obj | -
 
 - `ajax` - 参数说明 - 属性
 
@@ -80,9 +83,13 @@ localData | 假如数据有缓存，不请求ajax | obj | -
 
 属性 | 说明 | 类型 | 默认值
 ---|---|---|---
-onBefore | 在调用前改变`opts` | `(opts) => Promise` | -
-onAfter | 在调用后改变`response` | `(response) => Promise` | -
+onLoading | 请求时回调，`msg`由 `userOptions.tipMsg`决定 | `(msg) => void` | -
+onLoaded | 请求完回调，可以把`loading`移除 | `() => void` | -
+onBefore | 在调用前改变`options` - 拦截options | `(options) => Promise` | -
+onAfter | 在调用后改变`response` - 拦截response | `(response) => Promise` | -
+onOther | `status` !1或!0，以外的情  | `(response, resolve, reject) => void` | -
 onProgress | 上传进度回调 | `(e) => void` | -
+getXHRInstance | 获取XHR实例 | `(xhr) => void` | -
 
 
 

@@ -1,12 +1,3 @@
-/**
- * ajax
- * @param  {Func} loadingFn 加载时回调
- * @param  {Func} loadedFn  结束时回调
- * @param  {Func} setCb     结束时且200状态回调，可以设置配置信息，如果返回true，则终止
- * @param  {Func} otherCb   结束时且200状态回调，status其他以外的值回调
- * @param  {Object} opts   	参数
- * @return {type}
- */
 // class HotPomise extends Promise { // babel编译会出错，暂时不用
 // 	constructor(xhr, fn){
 // 		super(fn);
@@ -21,13 +12,9 @@
 // 	}
 // }
 const HotPromise = Promise;
-export const ajaxFn = (loadingFn, loadedFn, otherCb, opts = {}) => _opts => {
+export const ajaxFn = (defaultOptions = {}) => userOptions => {
 	// 配置；
-	_opts = {
-		...opts,
-		..._opts
-	};
-
+	let options = { ...defaultOptions, ...userOptions };
 	let xhr;
 	HotPromise.prototype.cancel = () => {
 		xhr instanceof XMLHttpRequest && (
@@ -39,31 +26,40 @@ export const ajaxFn = (loadingFn, loadedFn, otherCb, opts = {}) => _opts => {
 	};
 	return new HotPromise(async (resolve, reject) => {
 		/**
-		 * @param  {String} url 服务地址
-		 * @param  {Object} param 参数
-		 * @param  {Object} type 请求类型
 		 * @param  {Func} onProgress 上传回调
-		 * @param  {Bool} noLoading 不执行loadFn
-		 * @param  {Str} requestType 请求类型 'json' | 'form-data' | 'form-data:json'
-		 * @param  {Str} tipMsg 提示文字
 		 */
-		const { onBefore, onAfter } = _opts;
+		const {
+			onBefore,
+			onAfter,
+			onOther,
+			onLoading,
+			onLoaded,
+			onProgress,
+			getXHRInstance
+		} = options;
 		// url配置
 		if (onBefore && typeof onBefore === 'function') {
 			try {
-				_opts = await onBefore(_opts) || _opts;
+				options = await onBefore(options) || options;
 			} catch (e) {
 				console.log(e);
 			}
 
 		}
 		// -- end --
+		/**
+		 * @param  {String} url 服务地址
+		 * @param  {Object} param 参数
+		 * @param  {Object} type 请求类型
+		 * @param  {Bool} noLoading 不执行loadFn
+		 * @param  {Str} requestType 请求类型 'json' | 'form-data' | 'form-data:json'
+		 * @param  {Str} tipMsg 提示文字
+		 */
 		let {
 			url,
 			param,
 			type = 'GET',
 			localData,
-			onProgress,
 			noLoading = false,
 			requestType,
 			tipMsg,
@@ -71,7 +67,7 @@ export const ajaxFn = (loadingFn, loadedFn, otherCb, opts = {}) => _opts => {
 			async = true,
 			restful = false,
 			emptyStr = false,
-		} = _opts;
+		} = options;
 		if (!url && !localData) {
 			console.error('请求地址不存在');
 			reject({
@@ -93,34 +89,17 @@ export const ajaxFn = (loadingFn, loadedFn, otherCb, opts = {}) => _opts => {
 			delete param['id'];
 		}
 
-		!noLoading && !localData && loadingFn && loadingFn(tipMsg);
+		!noLoading && !localData && onLoading && onLoading(tipMsg);
 		let onDataReturn = async (response) => {
 			if (onAfter && typeof onAfter === 'function') {
 				try {
-					response = await onAfter(response) || response;
+					response = await onAfter(response, options) || response;
 				} catch (e) {
+					// ...
 					return;
 				}
 
 			}
-			// 图片上传时候，调用外部，不太一样
-			if (response.state) {
-				if (response.state === 'SUCCESS') {
-					resolve({
-						status: 1,
-						data: {
-							...response
-						}
-					});
-				} else {
-					reject({
-						msg: response.state,
-						...response
-					});
-				}
-				return;
-			}
-
 			// 正常业务流程
 			switch (response.status) {
 				case 1:
@@ -135,7 +114,7 @@ export const ajaxFn = (loadingFn, loadedFn, otherCb, opts = {}) => _opts => {
 					});
 					return;
 				default:
-					otherCb && otherCb(response, resolve, reject);
+					onOther && onOther(response, resolve, reject);
 			}
 		};
 
@@ -143,7 +122,7 @@ export const ajaxFn = (loadingFn, loadedFn, otherCb, opts = {}) => _opts => {
 		 * 如果本地已经从别的地方获取到数据，就不用请求了
 		 */
 		if (localData) {
-			!noLoading && !localData && loadedFn && loadedFn();
+			!noLoading && !localData && onLoaded && onLoaded();
 			onDataReturn(localData);
 			return;
 		}
@@ -151,8 +130,9 @@ export const ajaxFn = (loadingFn, loadedFn, otherCb, opts = {}) => _opts => {
 		xhr = new XMLHttpRequest();
 		try {
 			xhr.onreadystatechange = () => {
+				getXHRInstance && getXHRInstance(xhr);
 				if (xhr.readyState == 4) {
-					!noLoading && !localData && loadedFn && loadedFn(noLoading);
+					!noLoading && !localData && onLoaded && onLoaded(noLoading);
 					if (xhr.status >= 200 && xhr.status < 300) {
 						// 可以加上try-catch
 						try {
