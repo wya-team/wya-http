@@ -50,7 +50,7 @@ const request = net.ajax({
 
 属性 | 说明 | 类型 | 默认值
 ---|---|---|---
-ajaxFn | 注册函数 | `(loadingFn, loadedFn, setCb, otherCb, defaultOptions = {}) => Func` | -
+ajaxFn | 注册函数 | `(defaultOptions = {}) => Func` | -
 ajax | ajax函数，请求后可用`.cancel()`取消请求 | `(userOptions = {}) => HotPromise` | -
 
 ```js
