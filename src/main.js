@@ -62,6 +62,7 @@ export const ajaxFn = (defaultOptions = {}) => userOptions => {
 			localData,
 			noLoading = false,
 			requestType,
+			responseType, // 'arraybuffer' | 'blob' | 'document' ...
 			tipMsg,
 			headers,
 			async = true,
