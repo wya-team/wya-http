@@ -75,7 +75,7 @@ restful | 是否是`restful`, 主动提取`id`字段 | bool | `false`
 emptyStr | 是否接收空字符串 | bool | `false`
 requestType | `form-data`、`json`、`form-data:json`(POST方式以 `data: JSON.stringify(data)`传递) | str | `form-data`
 tipMsg | `提示框` | str | `加载中...`
-noLoading | 不执行`loadingFn`和`loadedFn` | str | -
+loading | 执行`loadingFn`和`loadedFn` | boolean | true
 localData | 假如数据有缓存，不请求ajax | obj | -
 
  

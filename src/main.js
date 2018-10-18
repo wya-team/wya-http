@@ -51,7 +51,7 @@ export const ajaxFn = (defaultOptions = {}) => userOptions => {
 		 * @param  {String} url 服务地址
 		 * @param  {Object} param 参数
 		 * @param  {Object} type 请求类型
-		 * @param  {Bool} noLoading 不执行loadFn
+		 * @param  {Bool} loading 执行loadFn
 		 * @param  {Str} requestType 请求类型 'json' | 'form-data' | 'form-data:json'
 		 * @param  {Str} tipMsg 提示文字
 		 */
@@ -60,7 +60,7 @@ export const ajaxFn = (defaultOptions = {}) => userOptions => {
 			param,
 			type = 'GET',
 			localData,
-			noLoading = false,
+			loading = true,
 			requestType,
 			responseType, // 'arraybuffer' | 'blob' | 'document' ...
 			tipMsg,
@@ -69,6 +69,10 @@ export const ajaxFn = (defaultOptions = {}) => userOptions => {
 			restful = false,
 			emptyStr = false,
 		} = options;
+
+		// 历史遗留api - noLoading
+		typeof options.noLoading === 'boolean' && (loading = !noLoading);
+		
 		if (!url && !localData) {
 			console.error('请求地址不存在');
 			reject({
@@ -90,7 +94,7 @@ export const ajaxFn = (defaultOptions = {}) => userOptions => {
 			delete param['id'];
 		}
 
-		!noLoading && !localData && onLoading && onLoading(tipMsg);
+		loading && !localData && onLoading && onLoading(tipMsg);
 		let onDataReturn = async (response) => {
 			if (onAfter && typeof onAfter === 'function') {
 				try {
@@ -123,7 +127,7 @@ export const ajaxFn = (defaultOptions = {}) => userOptions => {
 		 * 如果本地已经从别的地方获取到数据，就不用请求了
 		 */
 		if (localData) {
-			!noLoading && !localData && onLoaded && onLoaded();
+			loading && !localData && onLoaded && onLoaded();
 			onDataReturn(localData);
 			return;
 		}
@@ -133,7 +137,7 @@ export const ajaxFn = (defaultOptions = {}) => userOptions => {
 			xhr.onreadystatechange = () => {
 				getXHRInstance && getXHRInstance(xhr);
 				if (xhr.readyState == 4) {
-					!noLoading && !localData && onLoaded && onLoaded(noLoading);
+					loading && !localData && onLoaded && onLoaded();
 					if (xhr.status >= 200 && xhr.status < 300) {
 						// 可以加上try-catch
 						try {
