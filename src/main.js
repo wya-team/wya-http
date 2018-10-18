@@ -71,7 +71,7 @@ export const ajaxFn = (defaultOptions = {}) => userOptions => {
 		} = options;
 
 		// 历史遗留api - noLoading
-		typeof options.noLoading === 'boolean' && (loading = !noLoading);
+		typeof options.noLoading === 'boolean' && (loading = !options.noLoading);
 		
 		if (!url && !localData) {
 			console.error('请求地址不存在');
