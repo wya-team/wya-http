@@ -16,7 +16,7 @@ export const ajaxFn = (defaultOptions = {}) => userOptions => {
 	// 配置；
 	let options = { ...defaultOptions, ...userOptions };
 	let xhr;
-	HotPromise.prototype.cancel = () => {
+	HotPromise.prototype.cancel = () => { // Promise.then 返回一个新的Promise, 此处待优化
 		xhr instanceof XMLHttpRequest && (
 			xhr.__ABORTED__ = true,
 			xhr.abort(),
@@ -141,10 +141,17 @@ export const ajaxFn = (defaultOptions = {}) => userOptions => {
 					if (xhr.status >= 200 && xhr.status < 300) {
 						// 可以加上try-catch
 						try {
-							let data = JSON.parse(xhr.responseText);
+							let data = xhr.responseText 
+								? JSON.parse(xhr.responseText) 
+								: { 
+									status: 0, 
+									retcode: xhr.status, 
+									msg: `${messageError}.` 
+								};
 							onDataReturn(data);
 						} catch (e) {
 							reject({
+								status: 0,
 								retcode: xhr.status,
 								msg: `${messageError}.`
 							});
@@ -155,6 +162,7 @@ export const ajaxFn = (defaultOptions = {}) => userOptions => {
 							return;
 						}
 						reject({
+							status: 0,
 							retcode: xhr.status,
 							msg: `${messageError}..`
 						});
