@@ -40,7 +40,7 @@ export const ajaxFn = (defaultOptions = {}) => userOptions => {
 		// url配置
 		if (onBefore && typeof onBefore === 'function') {
 			try {
-				options = await onBefore(options) || options;
+				options = await onBefore(options, xhr) || options;
 			} catch (e) {
 				console.log(e);
 			}
@@ -98,7 +98,7 @@ export const ajaxFn = (defaultOptions = {}) => userOptions => {
 		let onDataReturn = async (response) => {
 			if (onAfter && typeof onAfter === 'function') {
 				try {
-					response = await onAfter(response, options) || response;
+					response = await onAfter(response, options, xhr) || response;
 				} catch (e) {
 					// ...
 					return;
