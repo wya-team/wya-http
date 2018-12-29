@@ -1,30 +1,15 @@
-// class HotPomise extends Promise { // babel编译会出错，暂时不用
-// 	constructor(xhr, fn){
-// 		super(fn);
-// 		this.xhr = xhr;
-// 	}
-// 	cancel(){
-// 		this.xhr instanceof XMLHttpRequest && (
-// 			this.xhr.abort(),
-// 			this.xhr = null,
-// 			console.log(`XMLHttpRequest Abort`)
-// 		);
-// 	}
-// }
-const HotPromise = Promise;
+export const cancel = (xhr) => {
+	if (xhr instanceof XMLHttpRequest) {
+		xhr.__ABORTED__ = true;
+		xhr.abort();
+		xhr = null;
+	}
+};
+
 export const ajaxFn = (defaultOptions = {}) => userOptions => {
 	// 配置；
 	let options = { ...defaultOptions, ...userOptions };
-	let xhr;
-	HotPromise.prototype.cancel = () => { // Promise.then 返回一个新的Promise, 此处待优化
-		xhr instanceof XMLHttpRequest && (
-			xhr.__ABORTED__ = true,
-			xhr.abort(),
-			xhr = null,
-			console.log(`XMLHttpRequest Abort`)
-		);
-	};
-	return new HotPromise(async (resolve, reject) => {
+	return new Promise(async (resolve, reject) => {
 		/**
 		 * @param  {Func} onProgress 上传回调
 		 */
@@ -35,7 +20,7 @@ export const ajaxFn = (defaultOptions = {}) => userOptions => {
 			onLoading,
 			onLoaded,
 			onProgress,
-			getXHRInstance
+			getInstance
 		} = options;
 		// url配置
 		if (onBefore && typeof onBefore === 'function') {
@@ -53,22 +38,25 @@ export const ajaxFn = (defaultOptions = {}) => userOptions => {
 		 * @param  {Object} type 请求类型
 		 * @param  {Bool} loading 执行loadFn
 		 * @param  {Str} requestType 请求类型 'json' | 'form-data' | 'form-data:json'
-		 * @param  {Str} tipMsg 提示文字
 		 */
 		let {
 			url,
+			apis = {},
 			param,
 			type = 'GET',
 			localData,
 			loading = true,
 			requestType,
 			responseType, // 'arraybuffer' | 'blob' | 'document' ...
-			tipMsg,
 			headers,
 			async = true,
 			restful = false,
 			emptyStr = false,
 		} = options;
+
+		if (!/[a-zA-z]+:\/\/[^\s]*/.test(url)){
+			url = apis[url];
+		}
 
 		// 历史遗留api - noLoading
 		typeof options.noLoading === 'boolean' && (loading = !options.noLoading);
@@ -80,6 +68,7 @@ export const ajaxFn = (defaultOptions = {}) => userOptions => {
 			});
 			return;
 		}
+
 
 		let messageError = '网络不稳定，请稍后重试';
 		let cgiSt = Date.now();
@@ -94,7 +83,7 @@ export const ajaxFn = (defaultOptions = {}) => userOptions => {
 			delete param['id'];
 		}
 
-		loading && !localData && onLoading && onLoading(tipMsg);
+		loading && !localData && onLoading && onLoading(options, xhr);
 		let onDataReturn = async (response) => {
 			if (onAfter && typeof onAfter === 'function') {
 				try {
@@ -127,17 +116,17 @@ export const ajaxFn = (defaultOptions = {}) => userOptions => {
 		 * 如果本地已经从别的地方获取到数据，就不用请求了
 		 */
 		if (localData) {
-			loading && !localData && onLoaded && onLoaded();
+			loading && !localData && onLoaded && onLoaded(options, xhr);
 			onDataReturn(localData);
 			return;
 		}
 		// 创建服务
-		xhr = new XMLHttpRequest();
+		let xhr = new XMLHttpRequest();
+		getInstance && getInstance(xhr, cancel.bind(null, xhr), options);
 		try {
 			xhr.onreadystatechange = () => {
-				getXHRInstance && getXHRInstance(xhr);
 				if (xhr.readyState == 4) {
-					loading && !localData && onLoaded && onLoaded();
+					loading && !localData && onLoaded && onLoaded(options, xhr);
 					if (xhr.status >= 200 && xhr.status < 300) {
 						// 可以加上try-catch
 						try {
@@ -280,7 +269,6 @@ export const ajaxFn = (defaultOptions = {}) => userOptions => {
 				}
 				xhr.send(dataForXHRSend);
 			}
-
 		} catch (e) {
 			console.error(e);
 		}

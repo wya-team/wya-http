@@ -1,12 +1,14 @@
 import { ajax } from '../src/main';
-const request = ajax({
+let cancel;
+
+ajax({
 	url: 'https://managexcx.ruishan666.com/setting/setting/template-set.json',
 	type: "post",
 	param: {
 		home_decorate_id: '2&&&&&&&'
 	},
-	// url: `http://localhost:3000/api/test`
-	requestType: "form-data:json"
+	requestType: "form-data:json",
+	getInstance: (xhr, cb) => cancel = cb
 }).then((res) => {
 	console.log(res, 0);
 }).catch((res) => {
@@ -16,9 +18,9 @@ const request = ajax({
 console.log('====================================');
 console.log(222);
 console.log('====================================');
-// setTimeout(() => {
-// 	request.cancel();
-// }, Math.random() * 700);
+setTimeout(() => {
+	cancel();
+}, Math.random() * 700);
 
 
 //
