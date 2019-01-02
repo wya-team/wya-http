@@ -9,6 +9,7 @@ export const cancel = (xhr) => {
 export const ajaxFn = (defaultOptions = {}) => userOptions => {
 	// 配置；
 	let options = { ...defaultOptions, ...userOptions };
+	let xhr;
 	return new Promise(async (resolve, reject) => {
 		/**
 		 * @param  {Func} onProgress 上传回调
@@ -121,7 +122,7 @@ export const ajaxFn = (defaultOptions = {}) => userOptions => {
 			return;
 		}
 		// 创建服务
-		let xhr = new XMLHttpRequest();
+		xhr = new XMLHttpRequest();
 		getInstance && getInstance(xhr, cancel.bind(null, xhr), options);
 		try {
 			xhr.onreadystatechange = () => {
