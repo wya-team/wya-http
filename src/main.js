@@ -28,7 +28,7 @@ export const ajaxFn = (defaultOptions = {}) => userOptions => {
 			try {
 				options = await onBefore(options, xhr) || options;
 			} catch (e) {
-				console.log(e);
+				console.log('[wya-fetch]', e);
 			}
 
 		}
@@ -90,7 +90,7 @@ export const ajaxFn = (defaultOptions = {}) => userOptions => {
 				try {
 					response = await onAfter(response, options, xhr) || response;
 				} catch (e) {
-					// ...
+					console.log('[wya-fetch]', e);
 					return;
 				}
 
