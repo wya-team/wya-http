@@ -8,7 +8,8 @@ ajax({
 		home_decorate_id: '2&&&&&&&'
 	},
 	requestType: "form-data:json",
-	getInstance: (xhr, cb) => cancel = cb
+	getInstance: (xhr, cb) => cancel = cb,
+	debug: true
 }).then((res) => {
 	console.log(res, 0);
 }).catch((res) => {

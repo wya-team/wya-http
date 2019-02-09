@@ -30,7 +30,6 @@ export const ajaxFn = (defaultOptions = {}) => userOptions => {
 			} catch (e) {
 				console.log('[wya-fetch]', e);
 			}
-
 		}
 		// -- end --
 		/**
@@ -53,6 +52,7 @@ export const ajaxFn = (defaultOptions = {}) => userOptions => {
 			async = true,
 			restful = false,
 			emptyStr = false,
+			debug = false,
 		} = options;
 
 		if (!/[a-zA-z]+:\/\/[^\s]*/.test(url)){
@@ -123,12 +123,18 @@ export const ajaxFn = (defaultOptions = {}) => userOptions => {
 		}
 		// 创建服务
 		xhr = new XMLHttpRequest();
+
+		debug && console.time(`[wya-fetch]: ${url}`);
+
 		getInstance && getInstance(xhr, cancel.bind(null, xhr), options);
 		try {
 			xhr.onreadystatechange = () => {
 				if (xhr.readyState == 4) {
 					loading && !localData && onLoaded && onLoaded(options, xhr);
 					if (xhr.status >= 200 && xhr.status < 300) {
+
+						debug && console.timeEnd(`[wya-fetch]: ${url}`);
+
 						// 可以加上try-catch
 						try {
 							let data = xhr.responseText 
