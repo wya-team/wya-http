@@ -11,59 +11,44 @@ npm install @wya/http --save
 ```
 ## 用法例子
 ```js
-// --- regiserNet.js ---
-import { ajaxFn } from '@wya/http';
-const loadingFn = (msg) => {
-	// loading
-};
-const loadedFn = () => {
-	// loaded
-};
-const otherFn = () => {
-	// to do
-};
-const defaultOptions = {
-	// onLoading: loadingFn,
-	// onLoaded: loadedFn,
-	// onBefore: beforeFn,
-	// onAfter: afterFn,
-	// onOther: otherFn,
-};
-const ajax = ajaxFn(defaultOptions);
-let net = {
-	ajax
-};
-export default net;
+import createHttpClient, { ajax } from '@wya/http';
 
-// --- example ---
-import net from './regiserNet';
-let cancel;
-const request = net.ajax({
-	url: `http://localhost:3000/api/test`,
-	getCancel: cb => cancel = cb
+let cancelCb;
+
+ajax({
+	url: 'xxxx',
+	type: "GET",
+	param: {
+		xx: '2'
+	},
+	requestType: "form-data:json",
+	getInstance: ({ xhr, cancel }) => cancelCb = cancel,
+	debug: true
 }).then((res) => {
-	console.log(res);
+	console.log(res, 0);
 }).catch((res) => {
 	console.log(res);
 });
-// cancel();
+
+setTimeout(() => {
+	cancelCb();
+}, 100);
 ```
 ## API
 
 属性 | 说明 | 类型 | 默认值
 ---|---|---|---
-ajaxFn | 注册函数 | `(defaultOptions = {}) => Func` | -
-ajax | ajax函数，请求后可用`.cancel()`取消请求 | `(userOptions = {}) => HotPromise` | -
+createHttpClient | 注册函数 | `(globalOptions = {}) => Func` | -
+ajax | ajax函数 | `(userOptions = {}) => Promise` | -
 
 ```js
-ajax = ajaxFn();
+const { ajax } = createHttpClient();
 ```
 
-- `ajaxFn` - 参数说明
+- `createHttpClient` - 参数说明
 
 属性 | 说明 | 类型 | 默认值
----|---|---|---
-defaultOptions | 可以给下面的`userOptions`设置些默认值 | obj | -
+globalOptions | 可以给下面的`userOptions`设置些默认值 | obj | -
 
 - `ajax` - 参数说明 - 属性
 
@@ -73,10 +58,10 @@ url | 请求地址`path` | str | -
 type | 请求类型 | str | `GET`
 param | 参数 | obj | -
 async | 请求是否是异步 | bool | `true`
+debug | 测试 | bool | `false`
 restful | 是否是`restful`, 主动提取`id`字段 | bool | `false`
 emptyStr | 是否接收空字符串 | bool | `false`
 requestType | `form-data`、`json`、`form-data:json`(POST方式以 `data: JSON.stringify(data)`传递) | str | `form-data`
-tipMsg | `提示框` | str | `加载中...`
 loading | 执行`loadingFn`和`loadedFn` | boolean | true
 localData | 假如数据有缓存，不请求ajax | obj | -
 
@@ -85,13 +70,13 @@ localData | 假如数据有缓存，不请求ajax | obj | -
 
 属性 | 说明 | 类型 | 默认值
 ---|---|---|---
-onLoading | 请求时回调 | `(options, xhr) => void` | -
-onLoaded | 请求完回调，可以把`loading`移除 | `(options, xhr) => void` | -
-onBefore | 在调用前改变`options` - 拦截options | `(options, xhr) => Promise` | -
-onAfter | 在调用后改变`response` - 拦截response | `(response, options, xhr) => Promise` | -
-onOther | `status` !1或!0，以外的情  | `(response, resolve, reject) => void` | -
+onLoading | 请求时回调 | `({  options }) => void` | -
+onLoaded | 请求完回调，可以把`loading`移除 | `({  options }) => void` | -
+onBefore | 在调用前改变`options` - 拦截options | `({ options }) => Promise` | -
+onAfter | 在调用后改变`response` - 拦截response | `({ response, options }) => Promise` | -
+onOther | `status` !1或!0，以外的情  | `({ response, options }) => void` | -
 onProgress | 上传进度回调 | `(e) => void` | -
-getInstance | 获取XHR实例 | `(xhr, cancelFn, options) => void` | -
+getInstance | 获取XHR实例 | `({ xhr, options, cancel }) => void` | -
 
 
 
