@@ -3,8 +3,6 @@
 
 ## [Demo](https://wya-team.github.io/wya-http/demo/index.html)
 
-> 0.3.0 改写了`ajaxFn` 调用，默认使用`defaultOptions`
-
 ## 安装
 ```
 npm install @wya/http --save
