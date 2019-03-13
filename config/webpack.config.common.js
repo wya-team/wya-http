@@ -15,7 +15,7 @@ const localPort = ((addPath) => {
 	}
 })();
 
-const libName = userConfig.libName || `fetch`;
+const libName = userConfig.libName || `http`;
 const localIp = (() => {
 	let ips = [];
 	let os = require('os');
@@ -44,6 +44,7 @@ const webpackConfig = {
 		modules: [path.resolve(APP_ROOT, 'src'), 'node_modules'],
 		extensions: ['.web.tsx', '.web.ts', '.web.jsx', '.web.js', '.ts', '.tsx', '.js', '.jsx', '.json', '.css', '.less', '.scss'],
 		alias: {
+			"@wya/http": path.resolve(APP_ROOT, 'src/index')
 		}
 	},
 	module: {

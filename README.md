@@ -1,18 +1,18 @@
-# wya-fetch
+# \@wya/http
 [![npm][npm-image]][npm-url] [![changelog][changelog-image]][changelog-url]
 
-## [Demo](https://wya-team.github.io/wya-fetch/demo/index.html)
+## [Demo](https://wya-team.github.io/wya-http/demo/index.html)
 
 > 0.3.0 改写了`ajaxFn` 调用，默认使用`defaultOptions`
 
 ## 安装
 ```
-npm install wya-fetch --save
+npm install @wya/http --save
 ```
 ## 用法例子
 ```js
 // --- regiserNet.js ---
-import { ajaxFn } from 'wya-fetch';
+import { ajaxFn } from '@wya/http';
 const loadingFn = (msg) => {
 	// loading
 };
@@ -99,5 +99,5 @@ getInstance | 获取XHR实例 | `(xhr, cancelFn, options) => void` | -
 [changelog-image]: https://img.shields.io/badge/changelog-md-blue.svg
 [changelog-url]: CHANGELOG.md
 
-[npm-image]: https://img.shields.io/npm/v/wya-fetch.svg
-[npm-url]: https://www.npmjs.com/package/wya-fetch
+[npm-image]: https://img.shields.io/npm/v/@wya/http.svg
+[npm-url]: https://www.npmjs.com/package/@wya/http

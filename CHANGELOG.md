@@ -1,4 +1,11 @@
 # 历史版本
+
+### 1.0.0 (2019-03-10)
+* `wya-fetch` -> `@wya/http`
+
+- ajaxFn -> createHTTPClient
+- 所有的错误状态都会进入catch
+
 ### 0.3.0 (2018-08-07)
 
 * ajaxFn 只接收 `defaultOptions`
