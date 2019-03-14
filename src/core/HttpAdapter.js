@@ -182,7 +182,7 @@ class HttpAdapter {
 			}
 		}
 
-		if (/(JSONP|GET|DELETE)$/.test(method) && paramArray.length > 0) {
+		if (/(JSONP|GET|DELETE)$/.test(options.method) && paramArray.length > 0) {
 			url += (url.indexOf('?') > -1 ? '&' : '?') + paramArray.join('&');
 		}
 
