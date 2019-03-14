@@ -9,11 +9,11 @@ ajax({
 	url: 'https://wyaoa.ruishan666.com/uploadfile/upimg.json?action=uploadimage&encode=utf-8&code=xcx',
 	type: "GET",
 	param: {
-		home_decorate_id: '2'
+		page: '2'
 	},
-	requestType: "form-data:json",
+	requestType: "json",
 	getInstance: ({ xhr, cancel }) => cancelCb = cancel,
-	debug: true
+	debug: true,
 }).then((res) => {
 	console.log(res, 0);
 }).catch((res) => {
@@ -23,10 +23,6 @@ ajax({
 setTimeout(() => {
 	cancelCb();
 }, 100);
-
-
-//
-
 
 document.querySelector('input').addEventListener('change', (e) => {
 	const request = ajax({
