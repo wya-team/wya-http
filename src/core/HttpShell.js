@@ -49,23 +49,12 @@ class HttpShell {
 				throw new Error(ERROR_CODE.HTTP_URL_EMPTY);
 			}
 
-			// todo 是否移入HttpBrowser
 			let method = type.toUpperCase();
-			let isJson = requestType === 'json';
-			let isFormDataJson = requestType === 'form-data:json';
-
-			if (restful && method !== 'POST' && param && param.id) {
-				let urlArr = url.split('?');
-				url = `${urlArr[0]}/${param.id}${urlArr[1] ? `?${urlArr[1]}` : ''}`;
-				delete param['id'];
-			}
 
 			return {
 				...opts,
 				url,
-				method,
-				isJson,
-				isFormDataJson
+				method
 			};
 		} catch (e) {
 			// 强制.then

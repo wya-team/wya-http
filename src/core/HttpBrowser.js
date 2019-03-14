@@ -4,17 +4,18 @@ class HttpBrowser {
 	static http = (opts = {}) => {
 		let {
 			getInstance,
-			onProgress
+			method,
+			useXHR
 		} = opts;
 
-		// let fn = (getInstance || onProgress || typeof fetch === 'undefined')  
-		// 	? HttpBrowser.xhrInvoke 
-		// 	: HttpBrowser.fetchInvoke;
+		let fn = (useXHR || /(JSONP|FORM)$/.test(method) || typeof fetch === 'undefined')  
+			? HttpBrowser.XHRInvoke 
+			: HttpBrowser.fetchInvoke;
 
-		let fn = HttpBrowser.xhrInvoke;
+		// let fn = HttpBrowser.XHRInvoke;
 		return fn(opts);
 	}
-	static xhrInvoke = (opts = {}) => {
+	static XHRInvoke = (opts = {}) => {
 		return new Promise((resolve, reject) => {
 			let {
 				onLoaded,
@@ -25,17 +26,25 @@ class HttpBrowser {
 				url,
 				param,
 				method,
-				loading = true,
+				loading,
 				headers,
-				async = true,
-				emptyStr = false,
-				debug = false,
-				isJson,
-				isFormDataJson
+				async,
+				emptyStr,
+				debug,
+				credentials,
+				restful
 			} = opts;
+
+			// TODO: /repo/{boos_id}/{id} 解析RESTFUL URL
+			if (restful && method !== 'POST' && param && param.id) {
+				let urlArr = url.split('?');
+				url = `${urlArr[0]}/${param.id}${urlArr[1] ? `?${urlArr[1]}` : ''}`;
+				delete param['id'];
+			}
+
 			let xhr = new XMLHttpRequest();
 
-			let tag = url;
+			let tag = `${url}: ${new Date().getTime()}`;
 
 			debug && console.time(`[@wya/http]: ${tag}`);
 			// 用于取消
@@ -45,11 +54,12 @@ class HttpBrowser {
 				cancel: HttpBrowser.cancel.bind(null, { xhr, options: opts, reject }), 
 			});
 
+			loading && onLoading({ options: opts, xhr });
+
 			xhr.onreadystatechange = () => {
 				if (xhr.readyState == 4) {
 					loading && onLoaded({ options: opts, xhr });
 					if (xhr.status >= 200 && xhr.status < 300) {
-
 						debug && console.timeEnd(`[@wya/http]: ${tag}`);
 						resolve(xhr.responseText || "{}");
 					} else {
@@ -66,34 +76,26 @@ class HttpBrowser {
 				}
 			};
 
-			let paramArray = [];
-			let paramString = '';
-			for (let key in param) {
-				/**
-				 * 过滤掉值为null, undefined, ''情况
-				 */
-				if (param[key] || param[key] === false || param[key] === 0  || (emptyStr && param[key] === '') ) {
-					paramArray.push(key + '=' + encodeURIComponent(param[key]));
-				}
-			}
+			const result = HttpBrowser.getOptions(opts); 
 
-			if (method === 'FORM') {
-				let formData = new FormData();
-
-				// 参数
-				if (param.data) {
-					Object.keys(param.data).map(key => {
-						formData.append(key, param.data[key]);
+			if (method === 'JSONP') {
+				if (!param['callback']) {
+					reject({
+						status: 0
 					});
 				}
-				let fileType = Object.prototype.toString.call(param['file']);
-				let fileName = undefined;
-				if (fileType === '[object Blob]') {
-					fileName = param['file'].name || fileName;
-				}
-				// 文件　param['name'] || param['filename'] 为了兼容历史问题
-				formData.append(param['name'] || param['filename'] || 'Filedata', param['file'], fileName);
 
+				window[param['callback']] = (data) => {
+					resolve(data);
+				};
+				let script = document.createElement("script");
+				let head = document.getElementsByTagName("head")[0];
+				script.src = result.url;
+				head.appendChild(script);
+				return;
+			} 
+
+			if (method === 'FORM') {
 				xhr.upload.onprogress = (e) => {
 					// e.lengthComputable
 					if (e.total > 0) {
@@ -102,79 +104,17 @@ class HttpBrowser {
 					}
 					onProgress && onProgress(e);
 				};
-				xhr.open('POST', url);
-				xhr.withCredentials = true;
-
-				xhr.setRequestHeader(
-					'X-Requested-With', 'XMLHttpRequest'
-				);
-
-				for (const h in headers) {
-					if (headers.hasOwnProperty(h) && headers[h] !== null) {
-						xhr.setRequestHeader(h, headers[h]);
-					}
-				}
-
-				xhr.send(formData);
-			} else if (method === 'JSONP') {
-				method = 'GET';
-
-				if (!param['callback']) {
-					reject({
-						status: 0
-					});
-				}
-
-				window[param['callback']] = (data) => {
-					onDataReturn(data);
-				};
-				if (paramArray.length > 0) {
-					url += (url.indexOf('?') > -1 ? '&' : '?') + paramArray.join('&');
-				}
-				let script = document.createElement("script");
-				let head = document.getElementsByTagName("head")[0];
-				script.src = url;
-				head.appendChild(script);
-			} else {
-				let dataForXHRSend = undefined;
-				switch (method){
-					case 'PUT':
-					case 'POST':
-						if (isJson) {
-							dataForXHRSend = typeof param === 'object'
-								? JSON.stringify(param)
-								: undefined;
-						} else {
-							dataForXHRSend = isFormDataJson
-								? `data=${encodeURIComponent(JSON.stringify(param))}` // 业务需要
-								: paramArray.join('&');
-						}
-						break;
-					case 'DELETE':
-					case 'GET':
-						if (paramArray.length > 0) {
-							url += (url.indexOf('?') > -1 ? '&' : '?') + paramArray.join('&');
-						}
-						break;
-					default:
-						break;
-				}
-				xhr.open(method, url, async);
-				xhr.withCredentials = true; // 允许发送cookie
-				// 跨域资源请求会发生两次 一次是204 可以参考cors // 无视就好
-				xhr.setRequestHeader(
-					'Content-Type', isJson ? `application/json;charset=utf-8` : `application/x-www-form-urlencoded`
-				);
-				xhr.setRequestHeader(
-					'X-Requested-With', 'XMLHttpRequest'
-				);
-				for (const h in headers) {
-					if (headers.hasOwnProperty(h) && headers[h] !== null) {
-						xhr.setRequestHeader(h, headers[h]);
-					}
-				}
-				xhr.send(dataForXHRSend);
 			}
+			xhr.open(result.method, result.url, async);
+			xhr.withCredentials = !!credentials;
+
+			for (const h in result.headers) {
+				if (result.headers.hasOwnProperty(h) && result.headers[h] !== null) {
+					xhr.setRequestHeader(h, result.headers[h]);
+				}
+			}
+
+			xhr.send(result.body);
 		});
 	}
 	static cancel({ xhr, options, reject }) {
@@ -182,21 +122,117 @@ class HttpBrowser {
 			xhr.__ABORTED__ = true;
 			xhr.abort();
 			xhr = null;
-		} else {
-			options.setOver();
 		}
-		!options.getOver() && reject(new HttpError({
+		options.setOver();
+		reject(new HttpError({
 			code: ERROR_CODE.HTTP_CANCEL
 		}));
 	}
 	static fetchInvoke = (opts = {}) => {
-		return fetch(opts.url, opts).then((res) => {
-			if (typeof res.json === 'function') {
-				return res.json();
-			}
-			return res;
+		const {
+			debug,
+			credentials,
+			loading,
+			onLoaded,
+			onLoading,
+			getInstance
+		} = opts;
+		let { url, headers, body, method } = HttpBrowser.getOptions(opts);
+
+		let tag = `${opts.url}: ${new Date().getTime()}`;
+
+		debug && console.time(`[@wya/http]: ${tag}`);
+
+		return new Promise((resolve, reject) => {
+			loading && onLoading({ options: opts });
+			// 用于取消
+			getInstance && getInstance({
+				cancel: HttpBrowser.cancel.bind(null, { options: opts, reject }), 
+			});
+
+			fetch(url, { headers, body, credentials, method }).then((res) => {
+				resolve(res.json());
+			}).catch((res) => {
+				reject(res);
+			}).finally(() => {
+				loading && onLoaded({ options: opts });
+				debug && console.timeEnd(`[@wya/http]: ${tag}`);
+			});
 		});
 	}
+	static getOptions = (options) => {
+		let { param, emptyStr, url, requestType } = options;
+
+		let isJson = requestType === 'json';
+		let isFormDataJson = requestType === 'form-data:json';
+
+		let paramArray = [];
+		let paramString = '';
+		for (let key in param) {
+			/**
+			 * 过滤掉值为null, undefined, ''情况
+			 */
+			if (param[key] || param[key] === false || param[key] === 0  || (emptyStr && param[key] === '') ) {
+				paramArray.push(key + '=' + encodeURIComponent(param[key]));
+			}
+		}
+
+		if (/(JSONP|GET|DELETE)$/.test(method) && paramArray.length > 0) {
+			url += (url.indexOf('?') > -1 ? '&' : '?') + paramArray.join('&');
+		}
+
+		let headers = {
+			'Accept': '*/*',
+			'X-Requested-With': 'XMLHttpRequest'
+		};
+		let method = options.method;
+
+
+		let body = undefined;
+
+		// 主动添加Header
+		if ((/(PUT|POST|DELETE)$/.test(options.method))) { // PUT + POST + DELETE
+			headers['Content-Type'] = isJson
+				? `application/json;charset=utf-8` 
+				: `application/x-www-form-urlencoded`;
+			if (isJson) {
+				body = typeof options.param === 'object'
+					? JSON.stringify(param)
+					: undefined;
+			} else {
+				body = isFormDataJson
+					? `data=${encodeURIComponent(JSON.stringify(param))}` // 业务需要
+					: paramArray.join('&');
+			}
+		} else if (options.method === 'FORM') {
+
+			headers['Content-Type'] = 'multipart/form-data';
+			method = 'POST';
+
+			let formData = new FormData();
+
+			// 参数
+			if (param) {
+				Object.keys(param).map(key => {
+					let fileType = Object.prototype.toString.call(param[key]);
+					let fileName = undefined;
+					if (fileType === '[object Blob]') {
+						fileName = param[key].name || fileName;
+
+					}
+					formData.append(key, param[key], fileName);
+				});
+			}
+			body = formData;
+		}
+
+		return {
+			url,
+			method,
+			headers: { ...headers, ...options.headers },
+			body
+		};
+	};
 }
 
 export default HttpBrowser;

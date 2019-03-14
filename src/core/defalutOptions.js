@@ -7,7 +7,11 @@ export default {
 	loading: true,
 	requestType: 'json',
 	responseType: 'arraybuffer', // 'arraybuffer' | 'blob' | 'document' ...
-	headers: {},
+	credentials: 'include',
+	headers: {
+		// Accept: 'application/json',
+	},
+	useXHR: false,
 	async: true,
 	restful: false,
 	emptyStr: false,
