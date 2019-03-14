@@ -21,7 +21,7 @@ ajax({
 });
 
 setTimeout(() => {
-	cancelCb();
+	// cancelCb();
 }, 100);
 
 document.querySelector('input').addEventListener('change', (e) => {

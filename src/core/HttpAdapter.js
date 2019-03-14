@@ -1,6 +1,6 @@
 import HttpError, { ERROR_CODE } from './HttpError';
 
-class HttpBrowser {
+class HttpAdapter {
 	static http = (opts = {}) => {
 		let {
 			getInstance,
@@ -9,11 +9,16 @@ class HttpBrowser {
 		} = opts;
 
 		let fn = (useXHR || /(JSONP|FORM)$/.test(method) || typeof fetch === 'undefined')  
-			? HttpBrowser.XHRInvoke 
-			: HttpBrowser.fetchInvoke;
+			? HttpAdapter.XHRInvoke 
+			: HttpAdapter.fetchInvoke;
 
-		// let fn = HttpBrowser.XHRInvoke;
+		// let fn = HttpAdapter.XHRInvoke;
 		return fn(opts);
+	}
+	static ssrInvoke = (opts = {}) => {
+		// return new Promise(() => {
+
+		// });
 	}
 	static XHRInvoke = (opts = {}) => {
 		return new Promise((resolve, reject) => {
@@ -51,7 +56,7 @@ class HttpBrowser {
 			getInstance && getInstance({
 				xhr,
 				options: opts,
-				cancel: HttpBrowser.cancel.bind(null, { xhr, options: opts, reject }), 
+				cancel: HttpAdapter.cancel.bind(null, { xhr, options: opts, reject }), 
 			});
 
 			loading && onLoading({ options: opts, xhr });
@@ -76,7 +81,7 @@ class HttpBrowser {
 				}
 			};
 
-			const result = HttpBrowser.getOptions(opts); 
+			const result = HttpAdapter.getOptions(opts); 
 
 			if (method === 'JSONP') {
 				if (!param['callback']) {
@@ -137,7 +142,7 @@ class HttpBrowser {
 			onLoading,
 			getInstance
 		} = opts;
-		let { url, headers, body, method } = HttpBrowser.getOptions(opts);
+		let { url, headers, body, method } = HttpAdapter.getOptions(opts);
 
 		let tag = `${opts.url}: ${new Date().getTime()}`;
 
@@ -147,7 +152,7 @@ class HttpBrowser {
 			loading && onLoading({ options: opts });
 			// 用于取消
 			getInstance && getInstance({
-				cancel: HttpBrowser.cancel.bind(null, { options: opts, reject }), 
+				cancel: HttpAdapter.cancel.bind(null, { options: opts, reject }), 
 			});
 
 			fetch(url, { headers, body, credentials, method }).then((res) => {
@@ -235,4 +240,4 @@ class HttpBrowser {
 	};
 }
 
-export default HttpBrowser;
+export default HttpAdapter;
