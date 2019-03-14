@@ -1,4 +1,7 @@
-import createHttpClient, { ajax } from '../src/index';
+import createHttpClient, { ajax } from '@wya/http';
+
+window.createHttpClient = createHttpClient;
+window.$ = createHttpClient();
 
 let cancelCb;
 
