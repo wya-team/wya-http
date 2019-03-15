@@ -3,7 +3,7 @@ export default {
 	apis: {},
 	param: null,
 	type: 'GET',
-	localData: null,
+	localData: null, // { status: 1, data: {}}
 	loading: true,
 	requestType: 'json',
 	responseType: 'arraybuffer', // 'arraybuffer' | 'blob' | 'document' ...

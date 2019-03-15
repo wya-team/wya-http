@@ -40,7 +40,7 @@ class HttpAdapter {
 				restful
 			} = opts;
 
-			// TODO: /repo/{boos_id}/{id} 解析RESTFUL URL
+			// TODO: /repo/{books_id}/{article_id} 解析RESTFUL URL
 			if (restful && method !== 'POST' && param && param.id) {
 				let urlArr = url.split('?');
 				url = `${urlArr[0]}/${param.id}${urlArr[1] ? `?${urlArr[1]}` : ''}`;
