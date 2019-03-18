@@ -1,10 +1,15 @@
 # 历史版本
 
+### 1.0.4 (2019-03-18)
+* 移除 restful API -> `/{books_id}/{article_id}` 
+* `emptyStr` -> `allowEmptyString`
+
 ### 1.0.0 (2019-03-10)
 * `wya-fetch` -> `@wya/http`
 
 - ajaxFn -> createHTTPClient
 - 所有的错误状态都会进入catch
+- 除onProgress, 其他hook参数均接受对象, 参考文档
 
 ### 0.3.0 (2018-08-07)
 

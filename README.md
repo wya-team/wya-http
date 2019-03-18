@@ -14,10 +14,14 @@ import createHttpClient, { ajax } from '@wya/http';
 let cancelCb;
 
 ajax({
-	url: 'xxxx',
+	url: 'http://***.com/{id}?userName={user.name}', // 支持动态路由
 	type: "GET",
 	param: {
-		xx: '2'
+		id: '2',
+		user: {
+			name: 'wya-team',
+			age: ''
+		}
 	},
 	requestType: "form-data:json",
 	getInstance: ({ xhr, cancel }) => cancelCb = cancel,
