@@ -157,7 +157,7 @@ class HttpAdapter {
 		});
 	}
 	static getOptions = (options) => {
-		let { param, allowEmptyStrings, url, requestType } = options;
+		let { param, allowEmptyString, url, requestType } = options;
 
 		let isJson = requestType === 'json';
 		let isFormDataJson = requestType === 'form-data:json';
@@ -182,7 +182,7 @@ class HttpAdapter {
 			/**
 			 * 过滤掉值为null, undefined, ''情况
 			 */
-			if (param[key] || param[key] === false || param[key] === 0  || (allowEmptyStrings && param[key] === '') ) {
+			if (param[key] || param[key] === false || param[key] === 0  || (allowEmptyString && param[key] === '') ) {
 				paramArray.push(key + '=' + encodeURIComponent(param[key]));
 			}
 		}
