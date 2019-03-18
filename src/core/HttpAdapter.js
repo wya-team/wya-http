@@ -1,4 +1,5 @@
 import HttpError, { ERROR_CODE } from './HttpError';
+import { getPropByPath } from '../utils/index';
 
 class HttpAdapter {
 	static http = (opts = {}) => {
@@ -27,25 +28,15 @@ class HttpAdapter {
 				onLoading,
 				getInstance,
 				onProgress,
-				setOver,
 				url,
 				param,
 				method,
 				loading,
 				headers,
 				async,
-				emptyStr,
 				debug,
-				credentials,
-				restful
+				credentials
 			} = opts;
-
-			// TODO: /repo/{books_id}/{article_id} 解析RESTFUL URL
-			if (restful && method !== 'POST' && param && param.id) {
-				let urlArr = url.split('?');
-				url = `${urlArr[0]}/${param.id}${urlArr[1] ? `?${urlArr[1]}` : ''}`;
-				delete param['id'];
-			}
 
 			let xhr = new XMLHttpRequest();
 
@@ -166,10 +157,24 @@ class HttpAdapter {
 		});
 	}
 	static getOptions = (options) => {
-		let { param, emptyStr, url, requestType } = options;
+		let { param, allowEmptyStrings, url, requestType } = options;
 
 		let isJson = requestType === 'json';
 		let isFormDataJson = requestType === 'form-data:json';
+
+		// /repo/{books_id}/{article_id} 解析RESTFUL URL 或者动 态的;
+		let dynamic = /\{([\s\S]{1,}?(\}?)+)\}/g;
+		if (dynamic.test(url)) {
+			let delTmp = [];
+			url = url.replace(dynamic, key => {
+				let k = key.replace(/(\{|\}|\s)/g, '');
+				delTmp.push(k);
+				return getPropByPath(param, k).value || key;
+			});
+
+			delTmp.forEach(i => param[i] && delete param[i]);
+		}
+		
 
 		let paramArray = [];
 		let paramString = '';
@@ -177,7 +182,7 @@ class HttpAdapter {
 			/**
 			 * 过滤掉值为null, undefined, ''情况
 			 */
-			if (param[key] || param[key] === false || param[key] === 0  || (emptyStr && param[key] === '') ) {
+			if (param[key] || param[key] === false || param[key] === 0  || (allowEmptyStrings && param[key] === '') ) {
 				paramArray.push(key + '=' + encodeURIComponent(param[key]));
 			}
 		}

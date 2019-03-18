@@ -6,12 +6,14 @@ window.$ = createHttpClient();
 let cancelCb;
 
 ajax({
-	url: 'https://wyaoa.ruishan666.com/uploadfile/upimg.json?action=uploadimage&encode=utf-8&code=xcx',
+	url: 'https://wyaoa.ruishan666.com/uploadfile/upimg.json?action=uploadimage&encode=utf-8&code=xcx&page={page}&pageSize={page}',
 	type: "GET",
 	param: {
-		page: '2'
+		page: '2',
+		empty: ''
 	},
 	requestType: "json",
+	allowEmptyString: true,
 	getInstance: ({ xhr, cancel }) => cancelCb = cancel,
 	debug: true,
 }).then((res) => {
