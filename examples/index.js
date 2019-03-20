@@ -1,12 +1,17 @@
 import createHttpClient, { ajax } from '@wya/http';
 
 window.createHttpClient = createHttpClient;
-window.$ = createHttpClient();
+window.$ = createHttpClient({
+	apis: {
+		_TEST_GET: "https://wyaoa.ruishan666.com/uploadfile/upimg.json?action=uploadimage&encode=utf-8&code=xcx&page={page}&pageSize={page}",
+		UPLOAD_POST: "https://wyaoa.ruishan666.com/uploadfile/upimg.json?action=uploadimage&encode=utf-8&code=xcx"
+	}
+});
 
 let cancelCb;
 
-ajax({
-	url: 'https://wyaoa.ruishan666.com/uploadfile/upimg.json?action=uploadimage&encode=utf-8&code=xcx&page={page}&pageSize={page}',
+$.ajax({
+	url: '_TEST_GET',
 	type: "GET",
 	param: {
 		page: '2',
@@ -27,8 +32,8 @@ setTimeout(() => {
 }, 100);
 
 document.querySelector('input').addEventListener('change', (e) => {
-	const request = ajax({
-		url: 'https://wyaoa.ruishan666.com/uploadfile/upimg.json?action=uploadimage&encode=utf-8&code=xcx',
+	const request = $.ajax({
+		url: 'UPLOAD_POST',
 		type: "FORM",
 		param: {
 			// filename: Date.now(),
