@@ -38,10 +38,10 @@ class HttpShell {
 				}
 			}
 
-			let { url, apis = {}, param, type, localData, requestType, restful } = opts;
+			let { url, param, type, localData, requestType, restful } = opts;
 
 			if (!/[a-zA-z]+:\/\/[^\s]*/.test(url)){
-				url = apis[url];
+				url = this.apis[url];
 			}
 
 
