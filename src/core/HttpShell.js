@@ -16,7 +16,8 @@ class HttpShell {
 		// 默认fetch
 		this.http = http || HttpAdapter.http;
 
-		this.globalOptions = {
+		// 与全局配置, 重新生成默认配置
+		this.defaultOptions = {
 			...defaultOptions,
 			...globalOptions
 		};
@@ -31,7 +32,7 @@ class HttpShell {
 	}
 
 	ajax(userOptions = {}) {
-		return this._sendRequest({ ...this.globalOptions, ...userOptions });
+		return this._sendRequest({ ...this.defaultOptions, ...userOptions });
 	}
 
 	async _getRequestOptions(opts = {}) {
