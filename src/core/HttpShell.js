@@ -1,16 +1,25 @@
 import HttpError, { ERROR_CODE } from './HttpError';
+import HttpAdapter from './HttpAdapter';
 import defaultOptions from './defalutOptions';
+
 class HttpShell {
 	constructor(opts = {}) {
-		const {
-			apis,
+		const { 
+			apis, 
 			baseUrl,
 			http,
+			...globalOptions 
 		} = opts;
+
 		this.apis = apis || {};
 
 		// 默认fetch
-		this.http = http;
+		this.http = http || HttpAdapter.http;
+
+		this.globalOptions = {
+			...defaultOptions,
+			...globalOptions
+		};
 
 		const allowMethod = ['get', 'post', 'put', 'delete', 'option', 'form'];
 
@@ -21,8 +30,8 @@ class HttpShell {
 		});
 	}
 
-	ajax(opts = {}) {
-		return this._sendRequest({ ...defaultOptions, ...opts });
+	ajax(userOptions = {}) {
+		return this._sendRequest({ ...this.globalOptions, ...userOptions });
 	}
 
 	async _getRequestOptions(opts = {}) {
