@@ -119,9 +119,12 @@ class HttpAdapter {
 			xhr.abort();
 			xhr = null;
 		}
-		reject(new HttpError({
+		options.setOver && options.setOver(new HttpError({
 			code: ERROR_CODE.HTTP_CANCEL
 		}));
+
+		// TODO: 检验如果不reject会不会造成内存泄漏
+		// reject();
 	}
 	static fetchInvoke = (opts = {}) => {
 		const {

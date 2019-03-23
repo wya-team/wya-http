@@ -76,43 +76,35 @@ class HttpShell {
 	}
 
 	async _sendRequest(opts) {
-		// 超时或者取消请求（会有数据，但不操作）, Todo: 改写成三个 new Promise((_, reject) => setOver = reject)
-		let isOver = false;
-		const setOver = (error) => {
-			isOver = true;
-		};
-
-		opts.setOver = setOver;
-		opts.getOver = () => isOver;
-
+		// 超时或者取消请求（会有数据，但不操作)
+		let setOver = null;
 		try {
 			opts = await this._getRequestOptions(opts);
 			const request = this._getApiPromise(opts);
+
+			const cancel = new Promise((_, reject) => setOver = reject);
+			opts.setOver = setOver;
+
 			if (opts.method === 'FORM') {
-				return request;
+				return Promise.race([request, cancel]);
 			} else {
-				return this._sendRequestWithTimeOut(opts, request);
+				return Promise.race([
+					request,
+					cancel,
+					new Promise((_, reject) => { // eslint-disable-line
+						setTimeout(() => {
+							reject(new HttpError({
+								code: ERROR_CODE.HTTP_REQUEST_TIMEOUT,
+							}));
+						}, opts.timeout);
+					}),
+				]);
 			}
 		} catch (e) {
-			setOver();
+			setOver && setOver();
 			// 强制.catch
 			throw new HttpError({ code: ERROR_CODE.HTTP_CODE_ILLEGAL, exception: e });
 		}
-	}
-
-	_sendRequestWithTimeOut(options, request) {
-		return Promise.race([
-			request,
-			new Promise((_, reject) => { // eslint-disable-line
-				setTimeout(() => {
-					const error = new HttpError({
-						code: ERROR_CODE.HTTP_REQUEST_TIMEOUT,
-					});
-					reject(error);
-					options.setOver && options.setOver(error);
-				}, options.timeout);
-			}),
-		]);
 	}
 
 	_getApiPromise(options) {
@@ -134,7 +126,7 @@ class HttpShell {
 						? response
 						: JSON.parse(response);
 				}).catch((e) => {
-					// 用户取消, 参数解析错误, 网络状态错误
+					// 参数解析错误, 网络状态错误
 					return new HttpError({
 						code: ERROR_CODE.HTTP_RESPONSE_PARSING_FAILED,
 						exception: e,
@@ -155,7 +147,7 @@ class HttpShell {
 	async _disposeResponse(opts = {}) {
 		try {
 			let { options, response, resolve, reject } = opts;
-			let { onOther, onAfter, getOver, setOver } = options;
+			let { onOther, onAfter } = options;
 			if (onAfter && typeof onAfter === 'function') {
 				try {
 					response = await onAfter({ response, options }) || response;
@@ -166,9 +158,6 @@ class HttpShell {
 					});
 				}
 			}
-			// http 已被取消
-			if (getOver && getOver()) return;
-			getOver && setOver();
 			// 正常业务流程
 			switch (response.status) {
 				case 1:
@@ -181,19 +170,25 @@ class HttpShell {
 					HttpError.output(response, options.debug);
 					return;
 				default:
-					let error = {
-						...new HttpError({
-							code: ERROR_CODE.HTTP_FORCE_DESTROY,
-						}),
-						...response
-					};
-					// 强制释放内存
-					reject(error);
-					HttpError.output(error, options.debug);
-					
-					onOther && onOther({
-						response, 
-					});
+					let other = onOther && onOther({ response, resolve, reject });
+					if (!other || typeof other !== 'object' || !other.then) {
+						let error = {
+							...new HttpError({
+								code: ERROR_CODE.HTTP_FORCE_DESTROY,
+							}),
+							...response
+						};
+						// 强制释放内存
+						reject(error);
+						HttpError.output(error, options.debug);
+					} else {
+						// 用户自行处理res的值
+						other.then(res => {
+							(res && typeof res === 'object' && (res.status === 1 || res.status === true))
+								? resolve(res)
+								: reject(res);
+						}).catch(e => reject(e));
+					}
 			}
 		} catch (e) {
 			throw new HttpError({ code: ERROR_CODE.HTTP_CODE_ILLEGAL, exception: e });
