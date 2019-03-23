@@ -1,4 +1,4 @@
-import { createHttpClient } from '..';
+import createHttpClient from '..';
 describe('browser.js', () => {
 	test('无URL验证错误', () => {
 		let $ = createHttpClient();
