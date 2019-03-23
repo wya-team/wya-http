@@ -3,13 +3,13 @@ import HttpAdapter from './HttpAdapter';
 import defaultOptions from './defalutOptions';
 
 class HttpShell {
-	constructor(opts = {}) {
+	constructor(registerOptions = {}) {
 		const { 
 			apis, 
 			baseUrl,
 			http,
 			...globalOptions 
-		} = opts;
+		} = registerOptions;
 
 		this.apis = apis || {};
 
@@ -82,7 +82,7 @@ class HttpShell {
 			opts = await this._getRequestOptions(opts);
 			const request = this._getApiPromise(opts);
 
-			const cancel = new Promise((_, reject) => setOver = reject);
+			const cancel = new Promise((_, reject) => setOver = e => (delete opts.setOver, reject(e)));
 			opts.setOver = setOver;
 
 			if (opts.method === 'FORM') {
@@ -147,6 +147,10 @@ class HttpShell {
 	async _disposeResponse(opts = {}) {
 		try {
 			let { options, response, resolve, reject } = opts;
+			
+			// 已经取消
+			if (!options.setOver) return;
+
 			let { onOther, onAfter } = options;
 			if (onAfter && typeof onAfter === 'function') {
 				try {
@@ -158,6 +162,7 @@ class HttpShell {
 					});
 				}
 			}
+
 			// 正常业务流程
 			switch (response.status) {
 				case 1:

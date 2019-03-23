@@ -50,7 +50,10 @@ const { ajax } = createHttpClient();
 - `createHttpClient` - 参数说明
 
 属性 | 说明 | 类型 | 默认值
+---|---|---|---
 globalOptions | 可以给下面的`userOptions`设置些默认值 | obj | -
+
+- 参数配置原则: `userOptions(single)` > `registerOptions(HOF)` >  `defaultOptions(single)`
 
 - `ajax` - 参数说明 - 属性
 

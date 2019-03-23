@@ -1,8 +1,8 @@
 import HttpShell from './core/HttpShell';
 
-const createHttpClient = (globalOptions = {}) => {
+const createHttpClient = (registerOptions = {}) => {
 
-	const clientWrapper = new HttpShell(globalOptions);
+	const clientWrapper = new HttpShell(registerOptions);
 	
 	const allowMethod = ['ajax', 'get', 'post', 'put', 'delete', 'option', 'form'];
 
