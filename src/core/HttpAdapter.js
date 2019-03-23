@@ -119,7 +119,6 @@ class HttpAdapter {
 			xhr.abort();
 			xhr = null;
 		}
-		options.setOver();
 		reject(new HttpError({
 			code: ERROR_CODE.HTTP_CANCEL
 		}));
@@ -147,8 +146,15 @@ class HttpAdapter {
 			});
 
 			fetch(url, { headers, body, credentials, method }).then((res) => {
-				resolve(res.json());
-			}).catch((res) => {
+				if (res.status >= 200 && res.status < 300) {
+					resolve(res.json());
+				} else {
+					reject(new HttpError({
+						code: ERROR_CODE.HTTP_STATUS_ERROR,
+						httpStatus: res.status,
+					}));
+				}
+			}).catch((res) => { // 跨域或其他
 				reject(res);
 			}).finally(() => {
 				loading && onLoaded({ options: opts });

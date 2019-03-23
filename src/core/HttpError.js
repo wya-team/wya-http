@@ -1,4 +1,5 @@
 // const ERROR_MAP = {
+// 	HTTP_CODE_ILLEGAL: '代码错误',
 // 	HTTP_URL_EMPTY: '地址为空',
 // 	HTTP_SEND_FAILED: '发送失败',
 // 	HTTP_TOKEN_EXPIRE: 'token校验失效',
@@ -12,6 +13,7 @@
 // };
 
 export const ERROR_CODE = {
+	HTTP_CODE_ILLEGAL: 'HTTP_CODE_ILLEGAL',
 	HTTP_URL_EMPTY: 'HTTP_URL_EMPTY',
 	HTTP_SEND_FAILED: 'HTTP_SEND_FAILED',
 	HTTP_TOKEN_EXPIRE: 'HTTP_TOKEN_EXPIRE',
@@ -29,6 +31,10 @@ class HttpError {
 		target.code && debug && console.log(`[@wya/http]: ${target.code}`);
 	}
 	constructor(options = {}) {
+		if (options.exception instanceof HttpError) {
+			options = options.exception;
+		}
+
 		const {
 			status = 0,
 			httpStatus,
