@@ -150,7 +150,7 @@ class HttpShell {
 			let { options, response, resolve, reject } = opts;
 			
 			// 已经取消
-			if (!options.setOver) return;
+			if (!options.localData && !options.setOver) return;
 
 			let { onOther, onAfter } = options;
 			if (onAfter && typeof onAfter === 'function') {
