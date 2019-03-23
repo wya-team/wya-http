@@ -21,34 +21,39 @@ $.ajax({
 	allowEmptyString: true,
 	getInstance: ({ xhr, cancel }) => cancelCb = cancel,
 	debug: true,
+	// useXHR: true,
 	onBefore: ({ options }) => {
 		// return new Promise((resolve, reject) => {
 		// 	resolve({
-		// 		...options,
-		// 		localData: {
-		// 			status: 1,
-		// 			data: {}
-		// 		}
+		// 		...options
 		// 	});
 		// });
 	},
 	onAfter: ({ response }) => {
-		return new Promise((resolve, reject) => {
-			resolve({
-				status: 1,
-				data: response
-			});
-		});
-	}
+		// return new Promise((resolve, reject) => {
+		// 	resolve({
+		// 		status: 1,
+		// 		data: response
+		// 	});
+		// });
+	},
+	onOther: ({ response }) => {
+		// return new Promise((resolve, reject) => {
+		// 	resolve({
+		// 		status: 0,
+		// 		data: response
+		// 	});
+		// });
+	} 
 }).then((res) => {
-	console.log(res, 0);
+	console.log('response success', res);
 }).catch((res) => {
-	console.log(res);
+	console.log('response error', res);
 });
 
 setTimeout(() => {
-	cancelCb();
-}, 100);
+	cancelCb && cancelCb();
+}, Math.random() * 100 + 100);
 
 document.querySelector('input').addEventListener('change', (e) => {
 	const request = $.ajax({
