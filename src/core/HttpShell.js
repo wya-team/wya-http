@@ -92,7 +92,7 @@ class HttpShell {
 				return Promise.race([
 					request,
 					cancel,
-					new Promise((_, reject) => { // eslint-disable-line
+					new Promise((_, reject) => {
 						setTimeout(() => {
 							reject(new HttpError({
 								code: ERROR_CODE.HTTP_REQUEST_TIMEOUT,

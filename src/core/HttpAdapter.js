@@ -225,7 +225,8 @@ class HttpAdapter {
 			}
 		} else if (options.method === 'FORM') {
 
-			headers['Content-Type'] = 'multipart/form-data';
+			// headers['Content-Type'] = 'multipart/form-data';
+			headers['Content-Type'] = null; // 自动生成代码片段
 			method = 'POST';
 
 			let formData = new FormData();
@@ -239,7 +240,9 @@ class HttpAdapter {
 						fileName = param[key].name || fileName;
 
 					}
-					formData.append(key, param[key], fileName);
+					fileName 
+						? formData.append(key, param[key], fileName)
+						: formData.append(key, param[key]); // 特殊处理
 				});
 			}
 			body = formData;
