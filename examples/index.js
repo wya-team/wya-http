@@ -24,9 +24,13 @@ $.ajax({
 	// useXHR: true,
 	onBefore: ({ options }) => {
 		// return new Promise((resolve, reject) => {
-		// 	resolve({
-		// 		...options
-		// 	});
+		// 	// resolve({
+		// 	// 	...options,
+		// 	// 	localData: {
+		// 	// 		status: 0,
+		// 	// 		data: {}
+		// 	// 	}
+		// 	// });
 		// });
 	},
 	onAfter: ({ response }) => {
