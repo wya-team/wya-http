@@ -226,7 +226,7 @@ class HttpAdapter {
 		} else if (options.method === 'FORM') {
 
 			// headers['Content-Type'] = 'multipart/form-data';
-			headers['Content-Type'] = null; // 自动生成代码片段
+			headers['Content-Type'] = null; // 自动生成代码片段, 携带boundary=[hash], 否则后端无法接受
 			method = 'POST';
 
 			let formData = new FormData();
