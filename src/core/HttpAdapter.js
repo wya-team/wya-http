@@ -57,7 +57,10 @@ class HttpAdapter {
 					loading && onLoaded({ options: opts, xhr });
 					if (xhr.status >= 200 && xhr.status < 300) {
 						debug && console.timeEnd(`[@wya/http]: ${tag}`);
-						resolve(xhr.responseText || "{}");
+						/**
+						 * TODO: 内部解析XML
+						 */
+						resolve(xhr.responseText || { httpStatus: xhr.status });
 					} else {
 						if (xhr.status === 0 && xhr.__ABORTED__ === true){
 							// 主动取消

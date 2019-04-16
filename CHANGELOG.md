@@ -1,5 +1,9 @@
 # 历史版本
 
+### 1.0.12 (2019-03-18)
+* `xhr.responseText`为空时, 返回 -> `{ httpStatus }` 
+* `emptyStr` -> `allowEmptyString`
+
 ### 1.0.4 (2019-03-18)
 * 移除 restful API -> `/{books_id}/{article_id}` 
 * `emptyStr` -> `allowEmptyString`

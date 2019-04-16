@@ -20,3 +20,16 @@ export const getPropByPath = (obj, path) => {
 		value: target[keyArr[i]]
 	};
 };
+
+
+export const isJson = (str) => {
+	let state = false;
+	try {
+		if (typeof JSON.parse(str) == "object") {
+			state = true;
+		}
+	} catch (e) {
+		
+	}
+	return false;
+};
