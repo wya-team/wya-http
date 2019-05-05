@@ -36,7 +36,7 @@ class HttpShell {
 
 		return this._sendRequest(options)
 			.catch((e) => {
-				HttpError.output(e, options.debug);
+				options.debug && HttpError.output(e);
 				return Promise.reject(e);
 			});
 	}

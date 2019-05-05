@@ -27,8 +27,8 @@ export const ERROR_CODE = {
 };
 
 class HttpError {
-	static output = (target = {}, debug) => {
-		target.code && debug && console.log(`[@wya/http]: ${target.code}`);
+	static output = (target = {}) => {
+		target.code && console.log(`[@wya/http]: ${target.code}`);
 	}
 	constructor(options = {}) {
 		if (options.exception instanceof HttpError) {
