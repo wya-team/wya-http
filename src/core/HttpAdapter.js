@@ -174,7 +174,10 @@ class HttpAdapter {
 		let isJson = requestType === 'json';
 		let isFormDataJson = requestType === 'form-data:json';
 
-		// /repo/{books_id}/{article_id} 解析RESTFUL URL 或者动 态的;
+		/**
+		 * /repo/{books_id}/{article_id} 解析RESTFUL URL 或者动 态的;
+		 * TODO: 是否考虑一下情况 -> /repo{/books_id}{/article_id}
+		 */
 		let dynamic = /\{([\s\S]{1,}?(\}?)+)\}/g;
 		if (dynamic.test(url)) {
 			let delTmp = [];
