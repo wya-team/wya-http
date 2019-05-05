@@ -57,15 +57,27 @@ describe('browser.js', () => {
 		}
 	});
 
-	// 存在问题
-	// test('验证网络请求', async () => {
-	// 	try {
-	// 		let options = {
-	// 			url: 'http://api.github.com/users/wya-team',
-	// 		};
-	// 		await $.ajax(options);
-	// 	} catch (response) {
-	// 		expect(response).toBe('wya');
-	// 	}
-	// });
+	// 设置20秒超时
+	jest.setTimeout(20000); 
+	test('server验证', async () => {
+		try {
+			let options = {
+				url: 'https://api.github.com/users/wya-team',
+				credentials: false, // cors下关闭
+				onAfter: ({ response }) => {
+					return {
+						status: 1,
+						data: {
+							...response
+						}
+					};
+				}
+			};
+
+			let res = await $.ajax(options);
+			expect(res.data.login).toBe('wya-team');
+		} catch (response) {
+			expect(response.status).toBe(0);
+		}
+	});
 });

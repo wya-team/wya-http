@@ -7,7 +7,7 @@ export default {
 	loading: true,
 	requestType: 'json',
 	responseType: 'arraybuffer', // 'arraybuffer' | 'blob' | 'document' ...
-	credentials: 'include',
+	credentials: 'include', // cors下请关闭
 	headers: {
 		// Accept: 'application/json',
 	},
