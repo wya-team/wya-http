@@ -32,7 +32,13 @@ class HttpShell {
 	}
 
 	ajax(userOptions = {}) {
-		return this._sendRequest({ ...this.defaultOptions, ...userOptions });
+		let options = { ...this.defaultOptions, ...userOptions };
+
+		return this._sendRequest(options)
+			.catch((e) => {
+				HttpError.output(e, options.debug);
+				return Promise.reject(e);
+			});
 	}
 
 	async _getRequestOptions(opts = {}) {
@@ -111,37 +117,34 @@ class HttpShell {
 	_getApiPromise(options) {
 		const { localData } = options;
 
-		return new Promise((resolve, reject) => {
+		return new Promise(async (resolve, reject) => {
+			let response;
+			
 			if (localData) {
-				this._disposeResponse({
-					response: localData, 
-					options, 
-					resolve, 
-					reject,
-				});
-				return;
-			}
-			this.http(options)
-				.then((response) => {
-					return typeof response === 'object' 
+				response = localData;
+			} else {
+				try {
+					response = await this.http(options);
+					response = typeof response === 'object' 
 						? response
 						: JSON.parse(response);
-				}).catch((e) => {
+				} catch (e) {
 					// 参数解析错误, 网络状态错误
-					return new HttpError({
+					response =  new HttpError({
 						code: ERROR_CODE.HTTP_RESPONSE_PARSING_FAILED,
 						exception: e,
 					});
-				}).then((response) => {
-					this._disposeResponse({
-						response, 
-						options, 
-						resolve, 
-						reject
-					}).catch((res) => {
-						reject(res);
-					});
-				});
+				}
+			}
+
+			// 重新构成结果
+			this._disposeResponse({
+				response, 
+				options, 
+				resolve, 
+				reject
+			}).catch(e => reject(e));
+			
 		});
 	}
 
@@ -173,7 +176,6 @@ class HttpShell {
 				case 0:
 				case false:
 					reject(response);
-					HttpError.output(response, options.debug);
 					return;
 				default:
 					let other = onOther && onOther({ response, resolve, reject });
@@ -186,14 +188,16 @@ class HttpShell {
 						};
 						// 强制释放内存
 						reject(error);
-						HttpError.output(error, options.debug);
 					} else {
-						// 用户自行处理res的值
-						other.then(res => {
+						try {
+							// 用户自行处理res的值
+							let res = await other;
 							(res && typeof res === 'object' && (res.status === 1 || res.status === true))
 								? resolve(res)
 								: reject(res);
-						}).catch(e => reject(e));
+						} catch (error) {
+							reject(error);
+						}
 					}
 			}
 		} catch (e) {
