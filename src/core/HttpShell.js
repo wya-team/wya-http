@@ -60,8 +60,8 @@ class HttpShell {
 			let { url, param, type, localData, requestType, restful } = opts;
 
 			if (!/[a-zA-z]+:\/\/[^\s]*/.test(url)){
-				url = url.replace(/(.*)\?.*/, '$1'); // 避免before带上?token=*之类
-				url = this.apis[url];
+				let combo = url.split('?'); // 避免before带上?token=*之类
+				url = `${this.apis[combo[0]] || ''}${combo[1] ? `?${combo[1]}` : '' }`;
 			}
 
 
