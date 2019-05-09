@@ -154,7 +154,7 @@ class HttpAdapter {
 			/**
 			 * bug fix
 			 * iOS 10 fetch() 没有finally方法
-			 * iOS 10 fetch() instanceof Promise -> false, 无法使用 Promise.prototype.finally 兼容
+			 * 使用@babel/polyfill修复Promise，无法修复fetch，可以是fetch内部实现了一套Promise
 			 */
 			let finallyHack = () => {
 				loading && onLoaded({ options: opts });
