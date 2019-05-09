@@ -138,4 +138,28 @@ describe('browser.js', () => {
 			expect(res.exception.message).toBe('程序内部执行错误');
 		}
 	});
+
+	jest.setTimeout(20000); 
+	test('server验证: onLoading 错误捕获', async () => {
+		let count = 0;
+		try {
+			let options = {
+				url: 'https://api.github.com/users/wya-team',
+				credentials: 'omit', // cors下关闭
+				debug: false,
+				onLoading: () => {
+					count++;
+				},
+				onLoaded: () => {
+					count++;
+				}
+			};
+
+			let res = await $.ajax(options);
+		} catch (res) {
+			expect(res.code).toBe(ERROR_CODE.HTTP_FORCE_DESTROY);
+		} finally {
+			expect(count).toBe(2);
+		}
+	});
 });

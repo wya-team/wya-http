@@ -149,41 +149,46 @@ class HttpAdapter {
 			// 用于取消
 			getInstance && getInstance({
 				cancel: HttpAdapter.cancel.bind(null, { options: opts, reject }), 
-			});
+			});	
 
-			try {
-				 fetch(url, { headers, body, credentials, method }).then((res = {}) => {
-					if (res.status >= 200 && res.status < 300) {
-						// 这里不用res.json, 与xhr同步
-						res.text()
-							.then(responseText => {
-								resolve(responseText);
-							})
-							.catch(error => {
-								reject(new HttpError({
-									code: ERROR_CODE.HTTP_RESPONSE_PARSING_FAILED,
-									httpStatus: res.status,
-									exception: error
-								}));
-							});
-					} else {
-						reject(new HttpError({
-							code: ERROR_CODE.HTTP_STATUS_ERROR,
-							httpStatus: res.status,
-						}));
-					}
-				}).catch((res) => { // 跨域或其他
+			/**
+			 * bug fix
+			 * iOS 10 fetch() 没有finally方法
+			 * iOS 10 fetch() instanceof Promise -> false, 无法使用 Promise.prototype.finally 兼容
+			 */
+			let finallyHack = () => {
+				loading && onLoaded({ options: opts });
+				debug && console.timeEnd(`[@wya/http]: ${tag}`);
+			};
+							
+			fetch(url, { headers, body, credentials, method }).then((res = {}) => {
+				if (res.status >= 200 && res.status < 300) {
+					// 这里不用res.json, 与xhr同步
+					res.text()
+						.then(responseText => {
+							resolve(responseText);
+						})
+						.catch(error => {
+							reject(new HttpError({
+								code: ERROR_CODE.HTTP_RESPONSE_PARSING_FAILED,
+								httpStatus: res.status,
+								exception: error
+							}));
+						});
+				} else {
 					reject(new HttpError({
 						code: ERROR_CODE.HTTP_STATUS_ERROR,
 						httpStatus: res.status,
 					}));
-				}).finally(() => {
-					loading && onLoaded({ options: opts });
-					debug && console.timeEnd(`[@wya/http]: ${tag}`);
-				});
-			} catch (e) {
-				console.log('hack for fetch, iOS 10.x emit throw');
-			}
+				}
+				finallyHack();
+			}).catch((res) => { // 跨域或其他
+				reject(new HttpError({
+					code: ERROR_CODE.HTTP_STATUS_ERROR,
+					httpStatus: res.status,
+				}));
+				finallyHack();
+			});
  			
 		});
 	}

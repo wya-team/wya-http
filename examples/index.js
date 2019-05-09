@@ -22,6 +22,12 @@ $.ajax({
 	getInstance: ({ xhr, cancel }) => cancelCb = cancel,
 	debug: true,
 	// useXHR: true,
+	onLoading: () => {
+		console.log('loading');
+	},
+	onLoaded: () => {
+		console.log('loaded');
+	},
 	onBefore: ({ options }) => {
 		// return new Promise((resolve, reject) => {
 		// 	// resolve({
