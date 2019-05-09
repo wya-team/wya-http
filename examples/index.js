@@ -3,15 +3,14 @@ import createHttpClient, { ajax } from '@wya/http';
 window.createHttpClient = createHttpClient;
 window.$ = createHttpClient({
 	apis: {
-		_TEST_GET: "https://wyaoa.ruishan666.com/uploadfile/upimg.json?action=uploadimage&encode=utf-8&code=xcx&page={page}&pageSize={page}",
-		UPLOAD_POST: "https://wyaoa.ruishan666.com/uploadfile/upimg.json?action=uploadimage&encode=utf-8&code=xcx"
+		TEST_GET: "https://api.github.com/users/wya-team?page={page}",
+		UPLOAD_POST: "https://api.github.com/users/wya-team"
 	}
 });
 
 let cancelCb;
-
 $.ajax({
-	url: '_TEST_GET',
+	url: 'TEST_GET',
 	type: "GET",
 	param: {
 		page: '2',
@@ -19,6 +18,7 @@ $.ajax({
 	},
 	requestType: "json",
 	allowEmptyString: true,
+	credentials: 'omit', // cors下关闭
 	getInstance: ({ xhr, cancel }) => cancelCb = cancel,
 	debug: true,
 	// useXHR: true,
@@ -34,12 +34,7 @@ $.ajax({
 		// });
 	},
 	onAfter: ({ response }) => {
-		// return new Promise((resolve, reject) => {
-		// 	resolve({
-		// 		status: 1,
-		// 		data: response
-		// 	});
-		// });
+		
 	},
 	onOther: ({ response }) => {
 		// return new Promise((resolve, reject) => {
@@ -67,6 +62,7 @@ document.querySelector('input').addEventListener('change', (e) => {
 			// filename: Date.now(),
 			file: e.target.files[0]
 		},
+		credentials: 'omit', // cors下关闭
 		onBefore: ({ options }) => {
 			let url = options.url;
 			let paramArray = [`token=${2222}`];

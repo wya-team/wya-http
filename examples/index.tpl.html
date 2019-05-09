@@ -10,5 +10,12 @@
 	<input type="file">
 
 	<div>测试demo待开发中。。。。</div>
+	<script>
+	    if (true) {
+	        // 微信中浏览器会生产好html, 如?admin_id=1, 相关资源会被缓存,  ?admin_id=1&多带个参数可解决
+	        document.write('<script src="\/\/cdn.bootcss.com\/eruda\/1.5.2\/eruda.min.js"><\/script>');
+	        document.write('<script>eruda.init();<\/script>');
+	    };
+	</script>
 </body>
 </html>

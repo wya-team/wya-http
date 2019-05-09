@@ -105,7 +105,7 @@ class HttpAdapter {
 				};
 			}
 			xhr.open(result.method, result.url, async);
-			xhr.withCredentials = !!credentials;
+			xhr.withCredentials = credentials === 'omit' ? false : !!credentials;
 
 			for (const h in result.headers) {
 				if (result.headers.hasOwnProperty(h) && result.headers[h] !== null) {
@@ -151,21 +151,40 @@ class HttpAdapter {
 				cancel: HttpAdapter.cancel.bind(null, { options: opts, reject }), 
 			});
 
-			fetch(url, { headers, body, credentials, method }).then((res) => {
-				if (res.status >= 200 && res.status < 300) {
-					resolve(res.json());
-				} else {
+			try {
+				 fetch(url, { headers, body, credentials, method }).then((res = {}) => {
+					if (res.status >= 200 && res.status < 300) {
+						// 这里不用res.json, 与xhr同步
+						res.text()
+							.then(responseText => {
+								resolve(responseText);
+							})
+							.catch(error => {
+								reject(new HttpError({
+									code: ERROR_CODE.HTTP_RESPONSE_PARSING_FAILED,
+									httpStatus: res.status,
+									exception: error
+								}));
+							});
+					} else {
+						reject(new HttpError({
+							code: ERROR_CODE.HTTP_STATUS_ERROR,
+							httpStatus: res.status,
+						}));
+					}
+				}).catch((res) => { // 跨域或其他
 					reject(new HttpError({
 						code: ERROR_CODE.HTTP_STATUS_ERROR,
 						httpStatus: res.status,
 					}));
-				}
-			}).catch((res) => { // 跨域或其他
-				reject(res);
-			}).finally(() => {
-				loading && onLoaded({ options: opts });
-				debug && console.timeEnd(`[@wya/http]: ${tag}`);
-			});
+				}).finally(() => {
+					loading && onLoaded({ options: opts });
+					debug && console.timeEnd(`[@wya/http]: ${tag}`);
+				});
+			} catch (e) {
+				console.log('hack for fetch, iOS 10.x emit throw');
+			}
+ 			
 		});
 	}
 	static getOptions = (options) => {

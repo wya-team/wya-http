@@ -60,6 +60,7 @@ class HttpShell {
 			let { url, param, type, localData, requestType, restful } = opts;
 
 			if (!/[a-zA-z]+:\/\/[^\s]*/.test(url)){
+				url = url.replace(/(.*)\?.*/, '$1'); // 避免before带上?token=*之类
 				url = this.apis[url];
 			}
 
@@ -114,37 +115,39 @@ class HttpShell {
 		}
 	}
 
-	_getApiPromise(options) {
+	_getApiPromise(options = {}) {
 		const { localData } = options;
 
-		return new Promise(async (resolve, reject) => {
-			let response;
-			
-			if (localData) {
-				response = localData;
-			} else {
-				try {
-					response = await this.http(options);
-					response = typeof response === 'object' 
+		return new Promise((resolve, reject) => {
+			let target = localData 
+				? Promise.resolve(localData) 
+				: this.http(options);
+				
+			// 不使用async/await 直观一些
+			target
+				.then((response) => {
+					return response = typeof response === 'object' 
 						? response
 						: JSON.parse(response);
-				} catch (e) {
-					// 参数解析错误, 网络状态错误
-					response =  new HttpError({
+				})
+				.catch((e) => {
+					return new HttpError({
 						code: ERROR_CODE.HTTP_RESPONSE_PARSING_FAILED,
 						exception: e,
 					});
-				}
-			}
-
-			// 重新构成结果
-			this._disposeResponse({
-				response, 
-				options, 
-				resolve, 
-				reject
-			}).catch(e => reject(e));
-			
+				})
+				.then((response) => {
+					// 重新构成结果
+					return this._disposeResponse({
+						response, 
+						options, 
+						resolve, 
+						reject
+					});
+				})
+				.catch(e => {
+					reject(e);
+				});
 		});
 	}
 

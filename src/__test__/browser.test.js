@@ -67,7 +67,7 @@ describe('browser.js', () => {
 		try {
 			let options = {
 				url: 'https://api.github.com/users/wya-team',
-				credentials: false, // cors下关闭
+				credentials: 'omit', // cors下关闭
 				onAfter: ({ response }) => {
 					return {
 						status: 1,
@@ -91,7 +91,7 @@ describe('browser.js', () => {
 		try {
 			let options = {
 				url: 'https://api.github.com/users/wya-team',
-				credentials: false, // cors下关闭
+				credentials: 'omit', // cors下关闭
 			};
 
 			let res = await $.ajax(options);
@@ -107,7 +107,7 @@ describe('browser.js', () => {
 		try {
 			let options = {
 				url: 'https://api.github.com/users/wya-team',
-				credentials: false, // cors下关闭
+				credentials: 'omit', // cors下关闭
 				onOther: ({ response, options, resolve, reject }) => {
 					expect(response.login).toBe('wya-team');
 				}
@@ -125,7 +125,7 @@ describe('browser.js', () => {
 		try {
 			let options = {
 				url: 'https://api.github.com/users/wya-team',
-				credentials: false, // cors下关闭
+				credentials: 'omit', // cors下关闭
 				debug: false,
 				onOther: ({ response, options, resolve, reject }) => {
 					throw new Error('程序内部执行错误'); // 被catch捕获
