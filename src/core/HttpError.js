@@ -41,7 +41,7 @@ class HttpError {
 			msg,
 			code,
 			exception,
-			response,
+			data
 		} = options;
 
 		this.exception = exception;
@@ -49,7 +49,7 @@ class HttpError {
 		this.httpStatus = httpStatus;
 		this.msg = msg;
 		this.code = code;
-		this.response = response;
+		this.data = data;
 	}
 }
 

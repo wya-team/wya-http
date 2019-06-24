@@ -119,7 +119,7 @@ class HttpShell {
 		const { localData } = options;
 
 		return new Promise((resolve, reject) => {
-			let temp;
+			let temp; // 通常用于请求返回的参数解析不是json时用（结合onAfter强制status: 1）
 			let target = localData 
 				? Promise.resolve(localData) 
 				: this.http(options);
@@ -136,7 +136,7 @@ class HttpShell {
 					return new HttpError({
 						code: ERROR_CODE.HTTP_RESPONSE_PARSING_FAILED,
 						exception: e,
-						response: temp
+						data: temp
 					});
 				})
 				.then((response) => {
