@@ -119,6 +119,7 @@ class HttpShell {
 		const { localData } = options;
 
 		return new Promise((resolve, reject) => {
+			let temp;
 			let target = localData 
 				? Promise.resolve(localData) 
 				: this.http(options);
@@ -126,6 +127,7 @@ class HttpShell {
 			// 不使用async/await 直观一些
 			target
 				.then((response) => {
+					temp = response;
 					return response = typeof response === 'object' 
 						? response
 						: JSON.parse(response);
@@ -134,9 +136,11 @@ class HttpShell {
 					return new HttpError({
 						code: ERROR_CODE.HTTP_RESPONSE_PARSING_FAILED,
 						exception: e,
+						response: temp
 					});
 				})
 				.then((response) => {
+					temp = null;
 					// 重新构成结果
 					return this._disposeResponse({
 						response, 
