@@ -24,5 +24,6 @@ export default {
 	onBefore: null,
 	onAfter: null,
 	onProgress: null,
-	getInstance: null
+	getInstance: null,
+	allowEmptyString: false
 };
