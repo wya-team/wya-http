@@ -108,7 +108,7 @@ class HttpAdapter {
 			xhr.withCredentials = credentials === 'omit' ? false : !!credentials;
 
 			for (const h in result.headers) {
-				if (result.headers.hasOwnProperty(h) && result.headers[h] !== null) {
+				if (result.headers.hasOwnProperty(h)) {
 					xhr.setRequestHeader(h, result.headers[h]);
 				}
 			}
@@ -138,7 +138,7 @@ class HttpAdapter {
 			onLoading,
 			getInstance
 		} = opts;
-		let { url, headers, body, method, mode } = HttpAdapter.getOptions(opts);
+		let { url, headers, body, method } = HttpAdapter.getOptions(opts);
 
 		let tag = `${opts.url}: ${new Date().getTime()}`;
 
@@ -161,7 +161,7 @@ class HttpAdapter {
 				debug && console.timeEnd(`[@wya/http]: ${tag}`);
 			};
 							
-			fetch(url, { headers, body, credentials, method, mode }).then((res = {}) => {
+			fetch(url, { headers, body, credentials, method }).then((res = {}) => {
 				if (res.status >= 200 && res.status < 300) {
 					// 这里不用res.json, 与xhr同步
 					res.text()
@@ -193,7 +193,7 @@ class HttpAdapter {
 		});
 	}
 	static getOptions = (options) => {
-		let { param, allowEmptyString, url, requestType, mode } = options;
+		let { param, allowEmptyString, url, requestType } = options;
 
 		let isJson = requestType === 'json';
 		let isFormDataJson = requestType === 'form-data:json';
@@ -278,12 +278,22 @@ class HttpAdapter {
 			body = formData;
 		}
 
+		headers = { ...headers, ...options.headers };
+
+		/**
+		 * 清理headers
+		 */
+		for (const h in headers) {
+			if (headers.hasOwnProperty(h) && !headers[h]) {
+				delete headers[h];
+			}
+		}
+
 		return {
 			url,
 			method,
-			headers: { ...headers, ...options.headers },
-			body,
-			mode
+			headers,
+			body
 		};
 	};
 }

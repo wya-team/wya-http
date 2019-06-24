@@ -96,3 +96,18 @@ document.querySelector('input').addEventListener('change', (e) => {
 		console.log(res);
 	});
 });
+
+
+ajax({
+	url: `https://at.alicdn.com/t/font_1119857_jn10c2dve0j.js`,
+	headers: {
+		'Accept': null,
+		'X-Requested-With': null
+	},
+	credentials: 'omit',
+	onAfter: ({ response }) => {
+		return response;
+	}
+}).then((res) => {
+	console.log(res);
+});
