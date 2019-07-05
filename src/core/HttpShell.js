@@ -85,14 +85,23 @@ class HttpShell {
 	}
 
 	async _sendRequest(opts) {
+		const { localData, loading, onLoading, onLoaded, delay } = opts;
+
+		!localData && loading && onLoading({ options: opts });
+
+		let beforeOver = () => {
+			!localData && loading && onLoaded({ options: opts });
+		};
+
 		// 超时或者取消请求（会有数据，但不操作)
 		let setOver = null;
 		try {
 			opts = await this._getRequestOptions(opts);
-			const request = this._getApiPromise(opts);
+			const request = this._getApiPromise(opts, beforeOver);
 
 			const cancel = new Promise((_, reject) => setOver = e => {
 				delete opts.setOver;
+				beforeOver();
 				reject(e);
 			});
 			opts.setOver = setOver;
@@ -105,6 +114,7 @@ class HttpShell {
 					cancel,
 					new Promise((_, reject) => {
 						setTimeout(() => {
+							beforeOver();
 							reject(new HttpError({
 								code: ERROR_CODE.HTTP_REQUEST_TIMEOUT,
 							}));
@@ -119,19 +129,17 @@ class HttpShell {
 		}
 	}
 
-	_getApiPromise(options = {}) {
-		const { localData, loading, onLoading, onLoaded, delay } = options;
+	_getApiPromise(options = {}, beforeOver) {
+		const { localData, delay } = options;
 
 		return new Promise((onSuccess, onError) => {
 			let temp; // 通常用于请求返回的参数解析不是json时用（结合onAfter强制status: 1）
 			let target = localData 
 				? Promise.resolve(localData) 
 				: this.http(options);
-			
-			!localData && loading && onLoading({ options });
 
 			let done = next => res => {
-				!localData && loading && onLoaded({ options });
+				beforeOver();
 				next(res);
 			};
 
