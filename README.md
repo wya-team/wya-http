@@ -68,7 +68,14 @@ requestType | `form-data`、`json`、`form-data:json`(POST方式以 `data: JSON.
 allowEmptyString | 是否接收空字符串 | bool | `false`
 loading | 执行`loadingFn`和`loadedFn` | boolean | true
 localData | 假如数据有缓存，不请求ajax | obj | -
-
+apis | - | - | -
+responseType | - | - | -
+credentials | - | - | -
+headers | - | - | -
+useXHR | - | - | -
+restful | - | - | -
+timeout | 单位s | - | - 
+delay | 单位s | - | -
  
 - `ajax` - 参数说明 - 方法
 

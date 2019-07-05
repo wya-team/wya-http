@@ -1,6 +1,7 @@
 import HttpError, { ERROR_CODE } from './HttpError';
 import HttpAdapter from './HttpAdapter';
 import defaultOptions from './defalutOptions';
+import { compose } from '../utils';
 
 class HttpShell {
 	constructor(registerOptions = {}) {
@@ -90,7 +91,10 @@ class HttpShell {
 			opts = await this._getRequestOptions(opts);
 			const request = this._getApiPromise(opts);
 
-			const cancel = new Promise((_, reject) => setOver = e => (delete opts.setOver, reject(e)));
+			const cancel = new Promise((_, reject) => setOver = e => {
+				delete opts.setOver;
+				reject(e);
+			});
 			opts.setOver = setOver;
 
 			if (opts.method === 'FORM') {
@@ -104,7 +108,7 @@ class HttpShell {
 							reject(new HttpError({
 								code: ERROR_CODE.HTTP_REQUEST_TIMEOUT,
 							}));
-						}, opts.timeout);
+						}, opts.timeout * 1000);
 					}),
 				]);
 			}
@@ -116,14 +120,30 @@ class HttpShell {
 	}
 
 	_getApiPromise(options = {}) {
-		const { localData } = options;
+		const { localData, loading, onLoading, onLoaded, delay } = options;
 
-		return new Promise((resolve, reject) => {
+		return new Promise((onSuccess, onError) => {
 			let temp; // 通常用于请求返回的参数解析不是json时用（结合onAfter强制status: 1）
 			let target = localData 
 				? Promise.resolve(localData) 
 				: this.http(options);
-				
+			
+			!localData && loading && onLoading({ options });
+
+			let done = next => res => {
+				!localData && loading && onLoaded({ options });
+				next(res);
+			};
+
+			let delayDone = next => res => {
+				typeof delay === 'number' 
+					? setTimeout(() => next(res), delay * 1000)
+					: next(res);
+			};
+
+			let resolve = compose(delayDone, done)(onSuccess);
+			let reject = compose(delayDone, done)(onError);
+
 			// 不使用async/await 直观一些
 			target
 				.then((response) => {

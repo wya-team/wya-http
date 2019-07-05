@@ -24,14 +24,11 @@ class HttpAdapter {
 	static XHRInvoke = (opts = {}) => {
 		return new Promise((resolve, reject) => {
 			let {
-				onLoaded,
-				onLoading,
 				getInstance,
 				onProgress,
 				url,
 				param,
 				method,
-				loading,
 				headers,
 				async,
 				debug,
@@ -50,11 +47,8 @@ class HttpAdapter {
 				cancel: HttpAdapter.cancel.bind(null, { xhr, options: opts, reject }), 
 			});
 
-			loading && onLoading({ options: opts, xhr });
-
 			xhr.onreadystatechange = () => {
 				if (xhr.readyState == 4) {
-					loading && onLoaded({ options: opts, xhr });
 					if (xhr.status >= 200 && xhr.status < 300) {
 						debug && console.timeEnd(`[@wya/http]: ${tag}`);
 						/**
@@ -133,9 +127,6 @@ class HttpAdapter {
 		const {
 			debug,
 			credentials,
-			loading,
-			onLoaded,
-			onLoading,
 			getInstance
 		} = opts;
 		let { url, headers, body, method } = HttpAdapter.getOptions(opts);
@@ -145,7 +136,6 @@ class HttpAdapter {
 		debug && console.time(`[@wya/http]: ${tag}`);
 
 		return new Promise((resolve, reject) => {
-			loading && onLoading({ options: opts });
 			// 用于取消
 			getInstance && getInstance({
 				cancel: HttpAdapter.cancel.bind(null, { options: opts, reject }), 
@@ -157,7 +147,6 @@ class HttpAdapter {
 			 * 使用@babel/polyfill修复Promise，无法修复fetch，可以是fetch内部实现了一套Promise
 			 */
 			let finallyHack = () => {
-				loading && onLoaded({ options: opts });
 				debug && console.timeEnd(`[@wya/http]: ${tag}`);
 			};
 							

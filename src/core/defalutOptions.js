@@ -16,7 +16,7 @@ export default {
 	restful: false,
 	emptyStr: false,
 	debug: false,
-	timeout: 20000,
+	timeout: 20, // 单位s
 	onError: () => {},
 	onOther: () => {},
 	onLoading: () => {},
@@ -25,5 +25,9 @@ export default {
 	onAfter: null,
 	onProgress: null,
 	getInstance: null,
-	allowEmptyString: false
+	allowEmptyString: false,
+	/**
+	 * 返回延迟
+	 */
+	delay: undefined, // 单位s
 };
