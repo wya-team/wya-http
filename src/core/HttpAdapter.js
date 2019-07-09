@@ -225,7 +225,6 @@ class HttpAdapter {
 		};
 		let method = options.method;
 
-
 		let body = undefined;
 
 		// 主动添加Header

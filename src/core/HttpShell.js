@@ -65,7 +65,6 @@ class HttpShell {
 				url = `${this.apis[combo[0]] || ''}${combo[1] ? `?${combo[1]}` : '' }`;
 			}
 
-
 			if (!url && !localData) {
 				throw new HttpError({ 
 					code: ERROR_CODE.HTTP_URL_EMPTY, 
