@@ -252,11 +252,9 @@ class HttpAdapter {
 			// 参数
 			if (param) {
 				Object.keys(param).map(key => {
-					let fileType = Object.prototype.toString.call(param[key]);
 					let fileName = undefined;
-					if (fileType === '[object Blob]') {
+					if (param[key] instanceof Blob) { // File or Blob
 						fileName = param[key].name || fileName;
-
 					}
 					fileName 
 						? formData.append(key, param[key], fileName)
