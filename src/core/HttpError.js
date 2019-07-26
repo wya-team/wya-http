@@ -40,14 +40,18 @@ class HttpError {
 			httpStatus,
 			msg,
 			code,
-			exception,
+			exception = {},
 			data
 		} = options;
 
 		this.exception = exception;
 		this.status = status;
 		this.httpStatus = httpStatus;
-		this.msg = msg;
+		/**
+		 * throw new Error('xx') -> exception.message 
+		 * throw { msg: 'xxx' } -> exception.msg 
+		 */
+		this.msg = msg || exception.msg || exception.message || '';
 		this.code = code;
 		this.data = data;
 	}
