@@ -14,7 +14,6 @@ export default {
 	useXHR: false,
 	async: true,
 	restful: false,
-	emptyStr: false,
 	debug: false,
 	timeout: 20, // 单位s
 	onError: () => {},

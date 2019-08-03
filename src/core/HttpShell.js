@@ -42,6 +42,65 @@ class HttpShell {
 			});
 	}
 
+	async _sendRequest(opts) {
+
+		this._beforeRequest(opts);
+
+		// 超时或者取消请求（会有数据，但不操作)
+		let setOver = null;
+		try {
+			opts = await this._getRequestOptions(opts);
+			const request = this._getApiPromise(opts);
+
+			const cancel = new Promise((_, reject) => {
+				setOver = e => {
+					delete opts.setOver;
+					this._beforeOver(opts);
+					reject(e);
+				};
+			});
+
+			opts.setOver = setOver;
+
+			if (opts.method === 'FORM') {
+				return Promise.race([request, cancel]);
+			} else {
+				return Promise.race([
+					request,
+					cancel,
+					new Promise((_, reject) => {
+						setTimeout(() => {
+							this._beforeOver(opts);
+							reject(new HttpError({
+								code: ERROR_CODE.HTTP_REQUEST_TIMEOUT,
+							}));
+						}, opts.timeout * 1000);
+					}),
+				]);
+			}
+		} catch (e) {
+			setOver && setOver();
+			// 强制.catch
+			throw new HttpError({ code: ERROR_CODE.HTTP_CODE_ILLEGAL, exception: e });
+		}
+	}
+
+	_beforeRequest(opts = {}) {
+		const { localData, loading, onLoading } = opts;
+
+		if (!localData && loading) {
+			onLoading({ options: opts });
+		}
+	}
+
+	_beforeOver(opts = {}) {
+		const { localData, loading, onLoaded } = opts;
+
+		if (!localData && loading) {
+			onLoaded({ options: opts });
+		}
+	}
+
 	async _getRequestOptions(opts = {}) {
 		try {
 			const { onBefore } = opts;
@@ -83,62 +142,17 @@ class HttpShell {
 		}
 	}
 
-	async _sendRequest(opts) {
-		const { localData, loading, onLoading, onLoaded, delay } = opts;
-
-		!localData && loading && onLoading({ options: opts });
-
-		let beforeOver = () => {
-			!localData && loading && onLoaded({ options: opts });
-		};
-
-		// 超时或者取消请求（会有数据，但不操作)
-		let setOver = null;
-		try {
-			opts = await this._getRequestOptions(opts);
-			const request = this._getApiPromise(opts, beforeOver);
-
-			const cancel = new Promise((_, reject) => setOver = e => {
-				delete opts.setOver;
-				beforeOver();
-				reject(e);
-			});
-			opts.setOver = setOver;
-
-			if (opts.method === 'FORM') {
-				return Promise.race([request, cancel]);
-			} else {
-				return Promise.race([
-					request,
-					cancel,
-					new Promise((_, reject) => {
-						setTimeout(() => {
-							beforeOver();
-							reject(new HttpError({
-								code: ERROR_CODE.HTTP_REQUEST_TIMEOUT,
-							}));
-						}, opts.timeout * 1000);
-					}),
-				]);
-			}
-		} catch (e) {
-			setOver && setOver();
-			// 强制.catch
-			throw new HttpError({ code: ERROR_CODE.HTTP_CODE_ILLEGAL, exception: e });
-		}
-	}
-
-	_getApiPromise(options = {}, beforeOver) {
-		const { localData, delay } = options;
+	_getApiPromise(opts = {}) {
+		const { localData, delay } = opts;
 
 		return new Promise((onSuccess, onError) => {
 			let temp; // 通常用于请求返回的参数解析不是json时用（结合onAfter强制status: 1）
 			let target = localData 
 				? Promise.resolve(localData) 
-				: this.http(options);
+				: this.http(opts);
 
 			let done = next => res => {
-				beforeOver();
+				this._beforeOver(opts);
 				next(res);
 			};
 
@@ -170,8 +184,8 @@ class HttpShell {
 					temp = null;
 					// 重新构成结果
 					return this._disposeResponse({
+						options: opts, 
 						response, 
-						options, 
 						resolve, 
 						reject
 					});
