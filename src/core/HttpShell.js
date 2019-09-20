@@ -1,7 +1,7 @@
 import HttpError, { ERROR_CODE } from './HttpError';
 import HttpAdapter from './HttpAdapter';
 import defaultOptions from './defalutOptions';
-import { compose } from '../utils';
+import { compose, noop } from '../utils';
 
 class HttpShell {
 	constructor(registerOptions = {}) {
@@ -9,6 +9,8 @@ class HttpShell {
 			apis, 
 			baseUrl,
 			http,
+			onBefore,
+			onAfter,
 			...globalOptions 
 		} = registerOptions;
 
@@ -16,6 +18,9 @@ class HttpShell {
 
 		// 默认fetch
 		this.http = http || HttpAdapter.http;
+
+		this.onBefore = onBefore || noop;
+		this.onAfter = onAfter || noop;
 
 		// 与全局配置, 重新生成默认配置
 		this.defaultOptions = {
@@ -106,15 +111,14 @@ class HttpShell {
 			const { onBefore } = opts;
 
 			// before
-			if (onBefore && typeof onBefore === 'function') {
-				try {
-					opts = await onBefore({ options: opts }) || opts;
-				} catch (e) {
-					throw new HttpError({ 
-						code: ERROR_CODE.HTTP_OPTIONS_BUILD_FAILED, 
-						exception: e 
-					});
-				}
+			try {
+				opts = await this.onBefore({ options: opts }) || opts;
+				opts = await onBefore({ options: opts }) || opts;
+			} catch (e) {
+				throw new HttpError({ 
+					code: ERROR_CODE.HTTP_OPTIONS_BUILD_FAILED, 
+					exception: e 
+				});
 			}
 
 			let { url, param, type, localData, requestType, restful } = opts;
@@ -204,15 +208,16 @@ class HttpShell {
 			if (!options.localData && !options.setOver) return;
 
 			let { onOther, onAfter } = options;
-			if (onAfter && typeof onAfter === 'function') {
-				try {
-					response = await onAfter({ response, options }) || response;
-				} catch (e) {
-					throw new HttpError({
-						code: ERROR_CODE.HTTP_RESPONSE_REBUILD_FAILED,
-						exception: e,
-					});
-				}
+
+			// after
+			try {
+				response = await onAfter({ response, options }) || response;
+				response = await this.onAfter({ response, options }) || response;
+			} catch (e) {
+				throw new HttpError({
+					code: ERROR_CODE.HTTP_RESPONSE_REBUILD_FAILED,
+					exception: e,
+				});
 			}
 
 			// 正常业务流程

@@ -1,6 +1,6 @@
 {
     "name": "@wya/http",
-    "version": "1.1.9",
+    "version": "1.1.10",
     "description": "wya-http for js",
     "main": "lib/index.js",
     "files": [

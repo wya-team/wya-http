@@ -1,7 +1,16 @@
 import createHttpClient from '..';
 import { ERROR_CODE } from '../core/HttpError';
 describe('browser.js', () => {
-	let $ = createHttpClient();
+	let $ = createHttpClient({
+		onAfter: (res) => {
+			expect(typeof res).toBe('object');
+			console.log(res);
+		},
+		onBefore: (res) => {
+			expect(typeof res).toBe('object');
+			console.log(res);
+		}
+	});
 	expect(typeof $.ajax).toBe('function');
 
 	test('无URL验证错误', async () => {

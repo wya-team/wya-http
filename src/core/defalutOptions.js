@@ -1,3 +1,5 @@
+import { noop } from '../utils';
+
 export default {
 	url: '',
 	apis: {},
@@ -16,12 +18,12 @@ export default {
 	restful: false,
 	debug: false,
 	timeout: 20, // 单位s
-	onError: () => {},
-	onOther: () => {},
-	onLoading: () => {},
-	onLoaded: () => {},
-	onBefore: null,
-	onAfter: null,
+	onError: noop,
+	onOther: noop,
+	onLoading: noop,
+	onLoaded: noop,
+	onBefore: noop, // 全局的onBefore优先执行
+	onAfter: noop, // 全局的onAfter最后执行
 	onProgress: null,
 	getInstance: null,
 	allowEmptyString: false,
