@@ -18,7 +18,6 @@ export default {
 	restful: false,
 	debug: false,
 	timeout: 20, // 单位s
-	onError: noop,
 	onOther: noop,
 	onLoading: noop,
 	onLoaded: noop,
@@ -31,4 +30,12 @@ export default {
 	 * 返回延迟
 	 */
 	delay: undefined, // 单位s
+	/**
+	 * TODO
+	 */
+	interval: 0, // 轮询
+	onError: noop,
+	onSuccess: noop,
+	onErrorRetry: noop,
+	
 };
