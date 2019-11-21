@@ -1,7 +1,9 @@
 # \@wya/http
 [![npm][npm-image]][npm-url] [![changelog][changelog-image]][changelog-url]
 
-## [Demo](https://wya-team.github.io/wya-http/demo/index.html)
+- [Demo](https://wya-team.github.io/wya-http/demo/index.html)
+
+- [Documents](https://wya-team.github.io/wya-http/docs/#/)
 
 ## 安装
 ```
