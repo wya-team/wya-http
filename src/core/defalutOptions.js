@@ -36,6 +36,5 @@ export default {
 	interval: 0, // 轮询
 	onError: noop,
 	onSuccess: noop,
-	onErrorRetry: noop,
-	
+	onErrorRetry: noop, // 失败一次重新请求
 };
