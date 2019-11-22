@@ -121,6 +121,8 @@ ajax({});
 
 ---
 
+## Options
+
 ### `apis` 
 
 - type: `Object`
@@ -139,10 +141,7 @@ let { ajax } = createHttpClient({
 	}
 });
 ```
-
 ---
-
-## Options
 
 ### `url` 
 
