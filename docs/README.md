@@ -513,13 +513,16 @@ ajax({
 - type: `Function`
 
 成功的状态回调，目前采用then的形式
-TODO: 成功场景下，取代then用onSuccess
+
+> 默认情况then取代onSuccess，轮询情况下使用onSuccess
 
 **示例**
 ```javascript
 ajax({
 	// ...,
 	onSuccess: () => {}
+}).then((res) => {
+
 });
 ```
 
@@ -532,11 +535,15 @@ ajax({
 
 失败的状态回调，目前采用catch的形式
 
+> 默认情况catch取代onError，轮询情况下使用onError
+
 **示例**
 ```javascript
 ajax({
 	// ...,
 	onError: () => {}
+}).catch(() => {
+
 });
 ```
 
@@ -549,8 +556,6 @@ ajax({
 - type: `Function`
 
 status 不为0或1执行的回调
-
-TODO: 结合轮询场景下，取代then用onSuccess
 
 **示例**
 ```javascript
