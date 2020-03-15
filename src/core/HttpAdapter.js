@@ -1,4 +1,5 @@
 import HttpError, { ERROR_CODE } from './HttpError';
+import HttpHelper from './HttpHelper';
 import { getPropByPath } from '../utils/index';
 
 class HttpAdapter {
@@ -36,16 +37,15 @@ class HttpAdapter {
 			} = opts;
 
 			let xhr = new XMLHttpRequest();
+			let cancel = HttpAdapter.cancel.bind(null, { xhr, options: opts, reject });
+			let params = { xhr, cancel, request: xhr, options: opts };
 
 			let tag = `${url}: ${new Date().getTime()}`;
 
 			debug && console.time(`[@wya/http]: ${tag}`);
 			// 用于取消
-			getInstance && getInstance({
-				xhr,
-				options: opts,
-				cancel: HttpAdapter.cancel.bind(null, { xhr, options: opts, reject }), 
-			});
+			getInstance && getInstance(params);
+			HttpHelper.add(params);
 
 			xhr.onreadystatechange = () => {
 				if (xhr.readyState == 4) {
@@ -65,6 +65,7 @@ class HttpAdapter {
 							httpStatus: xhr.status,
 						}));
 					}
+					HttpHelper.remove(xhr);
 					xhr = null;
 				}
 			};
@@ -136,21 +137,19 @@ class HttpAdapter {
 		debug && console.time(`[@wya/http]: ${tag}`);
 
 		return new Promise((resolve, reject) => {
-			// 用于取消
-			getInstance && getInstance({
-				cancel: HttpAdapter.cancel.bind(null, { options: opts, reject }), 
-			});	
-
+			let request;
+			let cancel; 
 			/**
 			 * bug fix
 			 * iOS 10 fetch() 没有finally方法
 			 * 使用@babel/polyfill修复Promise，无法修复fetch，可以是fetch内部实现了一套Promise
 			 */
 			let finallyHack = () => {
+				HttpHelper.remove(request);
 				debug && console.timeEnd(`[@wya/http]: ${tag}`);
 			};
 							
-			fetch(url, { headers, body, credentials, method }).then((res = {}) => {
+			request = fetch(url, { headers, body, credentials, method }).then((res = {}) => {
 				if (res.status >= 200 && res.status < 300) {
 					// 这里不用res.json, 与xhr同步
 					res.text()
@@ -178,7 +177,12 @@ class HttpAdapter {
 				}));
 				finallyHack();
 			});
- 			
+
+ 			cancel = HttpAdapter.cancel.bind(null, { options: opts, reject });
+ 			let params = { cancel, request, options: opts };
+ 			// 用于取消
+ 			getInstance && getInstance(params);	
+ 			HttpHelper.add(params);
 		});
 	}
 	static getOptions = (options) => {

@@ -1,6 +1,7 @@
 import HttpShell from './core/HttpShell';
 import HttpAdapter from './core/HttpAdapter';
 import HttpError from './core/HttpError';
+import HttpHelper from './core/HttpHelper';
 
 const createHttpClient = (registerOptions = {}) => {
 
@@ -22,6 +23,7 @@ export const { ajax } = createHttpClient();
 export {
 	HttpShell,
 	HttpAdapter,
-	HttpError
+	HttpError,
+	HttpHelper
 };
 export default createHttpClient;

@@ -1,14 +1,13 @@
-import createHttpClient from '..';
+import createHttpClient, { HttpHelper } from '..';
 import { ERROR_CODE } from '../core/HttpError';
+
 describe('browser.js', () => {
 	let $ = createHttpClient({
 		onAfter: (res) => {
 			expect(typeof res).toBe('object');
-			console.log(res);
 		},
 		onBefore: (res) => {
 			expect(typeof res).toBe('object');
-			console.log(res);
 		}
 	});
 	expect(typeof $.ajax).toBe('function');
@@ -170,5 +169,25 @@ describe('browser.js', () => {
 		} finally {
 			expect(count).toBe(2);
 		}
+	});
+
+	jest.setTimeout(20000);
+	test('HttpHelper', async () => {
+		expect(HttpHelper.requests.length).toBe(0);
+
+		let options = {
+			url: 'https://api.github.com/users/wya-team',
+			credentials: 'omit', // cors下关闭
+		};
+
+		let request = $.ajax(options);
+
+		// onBefore 会形成一个微任务， HttpHelper.add属于微任务范畴
+		await new Promise(r => setTimeout(r, 10));
+
+		expect(HttpHelper.requests.length).toBe(1);
+
+		HttpHelper.cancelAll();
+		expect(HttpHelper.requests.length).toBe(0);
 	});
 });
