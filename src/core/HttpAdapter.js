@@ -17,11 +17,7 @@ class HttpAdapter {
 		// let fn = HttpAdapter.XHRInvoke;
 		return fn(opts);
 	}
-	static ssrInvoke = (opts = {}) => {
-		// return new Promise(() => {
 
-		// });
-	}
 	static XHRInvoke = (opts = {}) => {
 		return new Promise((resolve, reject) => {
 			let {
