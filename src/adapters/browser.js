@@ -1,5 +1,5 @@
-import HttpError, { ERROR_CODE } from './HttpError';
-import HttpHelper from './HttpHelper';
+import HttpError, { ERROR_CODE } from '../core/HttpError';
+import HttpHelper from '../core/HttpHelper';
 import { getPropByPath } from '../utils/index';
 
 class HttpAdapter {
@@ -269,6 +269,12 @@ class HttpAdapter {
 
 		headers = { ...headers, ...options.headers };
 
+		// TODO: HTTP basic authentication
+		// if (options.auth) {
+		// 	let { username = '', password = '' }  = options.auth.username || '';
+		// 	headers.Authorization = 'Basic ' + window.btoa(username + ':' + password);
+		// }
+		
 		/**
 		 * 清理headers
 		 */

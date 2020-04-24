@@ -1,5 +1,4 @@
 import HttpError, { ERROR_CODE } from './HttpError';
-import HttpAdapter from './HttpAdapter';
 import defaultOptions from './defalutOptions';
 import { compose, noop } from '../utils';
 
@@ -14,11 +13,12 @@ class HttpShell {
 			...globalOptions 
 		} = registerOptions;
 
+		if (!http) {
+			throw new Error('[@wya/http:] http is required');
+		}
+
 		this.apis = apis || {};
-
-		// 默认fetch
-		this.http = http || HttpAdapter.http;
-
+		this.http = http;
 		this.onBefore = onBefore || noop;
 		this.onAfter = onAfter || noop;
 

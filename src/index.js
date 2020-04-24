@@ -1,11 +1,16 @@
 import HttpShell from './core/HttpShell';
-import HttpAdapter from './core/HttpAdapter';
 import HttpError from './core/HttpError';
 import HttpHelper from './core/HttpHelper';
+// 以上可以作为@wya/http-core
+
+import HttpAdapter from './adapters';
 
 const createHttpClient = (registerOptions = {}) => {
 
-	const clientWrapper = new HttpShell(registerOptions);
+	const clientWrapper = new HttpShell({
+		http: HttpAdapter.http,
+		...registerOptions,
+	});
 	
 	const allowMethod = ['ajax', 'get', 'post', 'put', 'delete', 'option', 'form'];
 
