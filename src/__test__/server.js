@@ -4,6 +4,11 @@ const port = 8833;
 
 http
 	.createServer((req, res) => {
+		// 处理CORS
+		res.setHeader('Access-Control-Allow-Origin', "*");
+		res.setHeader('Access-Control-Allow-Credentials', true);
+		res.setHeader('Access-Control-Allow-Methods', 'POST, GET, PUT, DELETE, OPTIONS');
+
 		setTimeout(() => {
 			res.end(JSON.stringify({
 				user: 'wya',
