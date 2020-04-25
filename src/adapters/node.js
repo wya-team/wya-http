@@ -150,7 +150,7 @@ class HttpAdapter {
 					headers['Content-Type'] = `application/json;charset=utf-8`;
 					body = Buffer.from(JSON.stringify(param), 'utf-8');
 				} else if (typeof param === 'string') {
-					headers['Content-Type'] = `application/x-www-form-urlencoded`;
+					headers['Content-Type'] = `application/x-www-form-urlencoded;charset=utf-8`;
 					body = Buffer.from(param, 'utf-8');
 				}
 				headers['Content-Length'] = body.length;

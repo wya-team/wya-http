@@ -197,7 +197,7 @@ class HttpAdapter {
 
 		// 主动添加Header
 		if ((/(PUT|POST|DELETE)$/.test(method))) { // PUT + POST + DELETE
-			headers['Content-Type'] = `application/json${isJson ? ';charset=utf-8' : 'x-www-form-urlencoded' }`;
+			headers['Content-Type'] = `application/${isJson ? 'json' : 'x-www-form-urlencoded' };charset=utf-8`;
 			if (isJson) {
 				body = typeof param === 'object'
 					? JSON.stringify(param)
