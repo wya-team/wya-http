@@ -77,7 +77,7 @@ describe('node.js', () => {
 	test('server验证: status = 1', async () => {
 		try {
 			let options = {
-				url: 'https://api.github.com/users/wya-team',
+				url: 'http://0.0.0.0:8833/',
 				credentials: 'omit', // cors下关闭
 				onAfter: ({ response }) => {
 					return {
@@ -99,7 +99,7 @@ describe('node.js', () => {
 	test('server验证: status = 0', async () => {
 		try {
 			let options = {
-				url: 'https://api.github.com/users/wya-team',
+				url: 'http://0.0.0.0:8833/',
 				credentials: 'omit', // cors下关闭
 			};
 
@@ -113,7 +113,7 @@ describe('node.js', () => {
 	test('server验证: onOther', async () => {
 		try {
 			let options = {
-				url: 'https://api.github.com/users/wya-team',
+				url: 'http://0.0.0.0:8833/',
 				credentials: 'omit', // cors下关闭
 				onOther: ({ response, options, resolve, reject }) => {
 					expect(response.login).toBe('wya-team');
@@ -129,7 +129,7 @@ describe('node.js', () => {
 	test('server验证: onOther 错误捕获', async () => {
 		try {
 			let options = {
-				url: 'https://api.github.com/users/wya-team',
+				url: 'http://0.0.0.0:8833/',
 				credentials: 'omit', // cors下关闭
 				debug: false,
 				onOther: ({ response, options, resolve, reject }) => {
@@ -148,7 +148,7 @@ describe('node.js', () => {
 		let count = 0;
 		try {
 			let options = {
-				url: 'https://api.github.com/users/wya-team',
+				url: 'http://0.0.0.0:8833/',
 				credentials: 'omit', // cors下关闭
 				debug: false,
 				onLoading: () => {
@@ -172,7 +172,7 @@ describe('node.js', () => {
 			expect(HttpHelper.requests.length).toBe(0);
 
 			let options = {
-				url: 'https://api.github.com/users/wya-team',
+				url: 'http://0.0.0.0:8833/',
 				credentials: 'omit', // cors下关闭
 			};
 

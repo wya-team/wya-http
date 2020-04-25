@@ -19,6 +19,7 @@
     "lint:fix": "npm run lint -- --fix",
     "lint:watch": "npm run lint -- --fix --watch",
     "all": "npm-run-all --parallel --race --continue-on-error lint:watch test:browser-watch",
+    "serve": "node ./src/__test__/server.js",
     "test": "npm run test:node && npm run test:browser",
     "test:node": "cross-env TARGET_ENV=node jest --config ./tests/config/jest.config.js",
     "test:node-watch": "npm run test:node -- --watch --runInBand --detectOpenHandles",

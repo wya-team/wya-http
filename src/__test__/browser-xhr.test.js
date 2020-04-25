@@ -1,7 +1,7 @@
 import createHttpClient, { HttpHelper } from '..';
 import { ERROR_CODE } from '../core/HttpError';
 
-describe('browser.js', () => {
+describe('browser-xhr.js', () => {
 	// 设置20秒超时
 	jest.setTimeout(20000); 
 	let $ = createHttpClient({
@@ -80,7 +80,7 @@ describe('browser.js', () => {
 	test('server验证: status = 1', async () => {
 		try {
 			let options = {
-				url: 'https://api.github.com/users/wya-team',
+				url: 'http://0.0.0.0:8833/',
 				credentials: 'omit', // cors下关闭
 				onAfter: ({ response }) => {
 					return {
@@ -102,7 +102,7 @@ describe('browser.js', () => {
 	test('server验证: status = 0', async () => {
 		try {
 			let options = {
-				url: 'https://api.github.com/users/wya-team',
+				url: 'http://0.0.0.0:8833/',
 				credentials: 'omit', // cors下关闭
 			};
 
@@ -116,7 +116,7 @@ describe('browser.js', () => {
 	test('server验证: onOther', async () => {
 		try {
 			let options = {
-				url: 'https://api.github.com/users/wya-team',
+				url: 'http://0.0.0.0:8833/',
 				credentials: 'omit', // cors下关闭
 				onOther: ({ response, options, resolve, reject }) => {
 					expect(response.login).toBe('wya-team');
@@ -132,7 +132,7 @@ describe('browser.js', () => {
 	test('server验证: onOther 错误捕获', async () => {
 		try {
 			let options = {
-				url: 'https://api.github.com/users/wya-team',
+				url: 'http://0.0.0.0:8833/',
 				credentials: 'omit', // cors下关闭
 				debug: false,
 				onOther: ({ response, options, resolve, reject }) => {
@@ -151,7 +151,7 @@ describe('browser.js', () => {
 		let count = 0;
 		try {
 			let options = {
-				url: 'https://api.github.com/users/wya-team',
+				url: 'http://0.0.0.0:8833/',
 				credentials: 'omit', // cors下关闭
 				debug: false,
 				onLoading: () => {
@@ -175,7 +175,7 @@ describe('browser.js', () => {
 			expect(HttpHelper.requests.length).toBe(0);
 
 			let options = {
-				url: 'https://api.github.com/users/wya-team',
+				url: 'http://0.0.0.0:8833/',
 				credentials: 'omit', // cors下关闭
 			};
 
