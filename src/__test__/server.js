@@ -6,11 +6,15 @@ http
 	.createServer((req, res) => {
 		console.log(req.method, req.url);
 
-		// 处理CORS
+		// 处理CORS 
 		res.setHeader('Access-Control-Allow-Origin', "*");
 		res.setHeader('Access-Control-Allow-Credentials', true);
 		res.setHeader('Access-Control-Allow-Methods', 'POST, GET, PUT, DELETE, OPTIONS');
+		res.setHeader('Access-Control-Allow-Headers', 'x-requested-with');
 
+		if (req.method === 'OPTIONS') {
+			res.writeHead(204); // No Content
+		}
 		setTimeout(() => {
 			res.end(JSON.stringify({
 				user: 'wya',
