@@ -2,8 +2,10 @@ import createHttpClient, { HttpHelper } from '..';
 import { ERROR_CODE } from '../core/HttpError';
 
 describe('browser.js', () => {
-	if (IS_SERVER) return;
+	// 设置20秒超时
+	jest.setTimeout(20000); 
 	let $ = createHttpClient({
+		useXHR: true,
 		onAfter: (res) => {
 			expect(typeof res).toBe('object');
 		},
@@ -11,7 +13,12 @@ describe('browser.js', () => {
 			expect(typeof res).toBe('object');
 		}
 	});
-	expect(typeof $.ajax).toBe('function');
+
+	test('Basic', async () => {
+		expect(typeof $.ajax).toBe('function');
+	});
+
+	if (IS_SERVER) return;
 
 	test('无URL验证错误', async () => {
 		try {
@@ -70,8 +77,6 @@ describe('browser.js', () => {
 		}
 	});
 
-	// 设置20秒超时
-	jest.setTimeout(20000); 
 	test('server验证: status = 1', async () => {
 		try {
 			let options = {
@@ -94,8 +99,6 @@ describe('browser.js', () => {
 		}
 	});
 
-	// 设置20秒超时
-	jest.setTimeout(20000); 
 	test('server验证: status = 0', async () => {
 		try {
 			let options = {
@@ -110,8 +113,6 @@ describe('browser.js', () => {
 		}
 	});
 
-	// 设置20秒超时
-	jest.setTimeout(20000); 
 	test('server验证: onOther', async () => {
 		try {
 			let options = {
@@ -128,8 +129,6 @@ describe('browser.js', () => {
 		}
 	});
 
-	// 设置20秒超时
-	jest.setTimeout(20000); 
 	test('server验证: onOther 错误捕获', async () => {
 		try {
 			let options = {
@@ -148,7 +147,6 @@ describe('browser.js', () => {
 		}
 	});
 
-	jest.setTimeout(20000); 
 	test('server验证: onLoading 错误捕获', async () => {
 		let count = 0;
 		try {
@@ -172,23 +170,28 @@ describe('browser.js', () => {
 		}
 	});
 
-	jest.setTimeout(20000);
 	test('HttpHelper', async () => {
-		expect(HttpHelper.requests.length).toBe(0);
+		try {
+			expect(HttpHelper.requests.length).toBe(0);
 
-		let options = {
-			url: 'https://api.github.com/users/wya-team',
-			credentials: 'omit', // cors下关闭
-		};
+			let options = {
+				url: 'https://api.github.com/users/wya-team',
+				credentials: 'omit', // cors下关闭
+			};
 
-		let request = $.ajax(options);
+			let request = $.ajax(options).catch((res) => {
+				expect(res.code).toBe(ERROR_CODE.HTTP_CANCEL);
+			});
 
-		// onBefore 会形成一个微任务， HttpHelper.add属于微任务范畴
-		await new Promise(r => setTimeout(r, 10));
+			// onBefore 会形成一个微任务， HttpHelper.add属于微任务范畴
+			await new Promise(r => setTimeout(r, 10));
 
-		expect(HttpHelper.requests.length).toBe(1);
+			expect(HttpHelper.requests.length).toBe(1);
 
-		HttpHelper.cancelAll();
-		expect(HttpHelper.requests.length).toBe(0);
+			HttpHelper.cancelAll();
+			expect(HttpHelper.requests.length).toBe(0);
+		} catch (e) {
+			throw new Error(e.message);
+		}
 	});
 });

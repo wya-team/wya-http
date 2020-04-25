@@ -7,8 +7,8 @@ export default {
 	type: 'GET',
 	localData: null, // { status: 1, data: {}}
 	loading: true,
-	requestType: 'json',
-	responseType: 'arraybuffer', // 'arraybuffer' | 'blob' | 'document' ...
+	requestType: 'json', // json | form-data | form-data:json
+	responseType: 'text', // text | 'arraybuffer' | 'blob' | 'document' ...
 	credentials: 'include', // cors下请关闭
 	headers: {
 		// Accept: 'application/json',

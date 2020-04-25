@@ -21,7 +21,7 @@
     "all": "npm-run-all --parallel --race --continue-on-error lint:watch test:browser-watch",
     "test": "npm run test:node && npm run test:browser",
     "test:node": "cross-env TARGET_ENV=node jest --config ./tests/config/jest.config.js",
-    "test:node-watch": "npm run test:node -- --watch",
+    "test:node-watch": "npm run test:node -- --watch --runInBand --detectOpenHandles",
     "test:browser": "cross-env TARGET_ENV=browser jest --config ./tests/config/jest.config.js",
     "test:browser-watch": "npm run test:browser -- --watch"
   },
@@ -63,6 +63,9 @@
   },
   "peerDependencies": {
     "@babel/runtime": ">=7.0.0"
+  },
+  "browser": {
+    "./lib/adapters/node.js": "./lib/adapters/browser.js"
   },
   "husky": {
     "hooks": {

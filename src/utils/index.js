@@ -48,3 +48,54 @@ export const compose = (...funcs) => {
 };
 
 export const noop = () => {};
+
+export const rebuildURLAndParam = (opts = {}) => {
+	let { url, param, allowEmptyString, method } = opts;
+
+	if (!param) {
+		return {
+			url,
+			param: null,
+			paramArray: []
+		};
+	}
+	/**
+	 * /repo/{books_id}/{article_id} 解析RESTFUL URL 或者动 态的;
+	 * TODO: 是否考虑一下情况 
+	 * -> /repo{/books_id}{/article_id}
+	 * -> /repo/:books_id/:article_id?page={page}
+	 * -> /repo/:books_id?/:article_id?page={page}
+	 */
+	let dynamic = /\{([\s\S]{1,}?(\}?)+)\}/g;
+	if (dynamic.test(url)) {
+		let delTmp = [];
+		url = url.replace(dynamic, key => {
+			let k = key.replace(/(\{|\}|\s)/g, '');
+			delTmp.push(k);
+			return getPropByPath(param, k).value || key;
+		});
+
+		delTmp.forEach(i => param[i] && delete param[i]);
+	}
+	
+
+	let paramArray = [];
+	for (let key in param) {
+		/**
+		 * 过滤掉值为null, undefined, ''情况
+		 */
+		if (param[key] || param[key] === false || param[key] === 0  || (allowEmptyString && param[key] === '') ) {
+			paramArray.push(key + '=' + encodeURIComponent(param[key]));
+		}
+	}
+
+	if (/(JSONP|GET|DELETE)$/.test(method) && paramArray.length > 0) {
+		url += (url.indexOf('?') > -1 ? '&' : '?') + paramArray.join('&');
+	}
+
+	return {
+		url,
+		param,
+		paramArray
+	};
+};

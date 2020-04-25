@@ -1,6 +1,6 @@
 import HttpError, { ERROR_CODE } from '../core/HttpError';
 import HttpHelper from '../core/HttpHelper';
-import { getPropByPath } from '../utils/index';
+import { rebuildURLAndParam } from '../utils/index';
 
 class HttpAdapter {
 	static http = (opts = {}) => {
@@ -34,14 +34,14 @@ class HttpAdapter {
 
 			let xhr = new XMLHttpRequest();
 			let cancel = HttpAdapter.cancel.bind(null, { xhr, options: opts, reject });
-			let params = { xhr, cancel, request: xhr, options: opts };
+			let $param = { xhr, cancel, request: xhr, options: opts };
 
 			let tag = `${url}: ${new Date().getTime()}`;
 
 			debug && console.time(`[@wya/http]: ${tag}`);
 			// 用于取消
-			getInstance && getInstance(params);
-			HttpHelper.add(params);
+			getInstance && getInstance($param);
+			HttpHelper.add($param);
 
 			xhr.onreadystatechange = () => {
 				if (xhr.readyState == 4) {
@@ -174,69 +174,32 @@ class HttpAdapter {
 				finallyHack();
 			});
 
- 			cancel = HttpAdapter.cancel.bind(null, { options: opts, reject });
- 			let params = { cancel, request, options: opts };
- 			// 用于取消
- 			getInstance && getInstance(params);	
- 			HttpHelper.add(params);
+			cancel = HttpAdapter.cancel.bind(null, { options: opts, reject });
+			let $param = { cancel, request, options: opts };
+			// 用于取消
+			getInstance && getInstance($param);	
+			HttpHelper.add($param);
 		});
 	}
 	static getOptions = (options) => {
-		let { param, allowEmptyString, url, requestType } = options;
+		let { requestType, method } = options;
 
 		let isJson = requestType === 'json';
 		let isFormDataJson = requestType === 'form-data:json';
 
-		/**
-		 * /repo/{books_id}/{article_id} 解析RESTFUL URL 或者动 态的;
-		 * TODO: 是否考虑一下情况 
-		 * -> /repo{/books_id}{/article_id}
-		 * -> /repo/:books_id/:article_id?page={page}
-		 * -> /repo/:books_id?/:article_id?page={page}
-		 */
-		let dynamic = /\{([\s\S]{1,}?(\}?)+)\}/g;
-		if (dynamic.test(url)) {
-			let delTmp = [];
-			url = url.replace(dynamic, key => {
-				let k = key.replace(/(\{|\}|\s)/g, '');
-				delTmp.push(k);
-				return getPropByPath(param, k).value || key;
-			});
-
-			delTmp.forEach(i => param[i] && delete param[i]);
-		}
-		
-
-		let paramArray = [];
-		let paramString = '';
-		for (let key in param) {
-			/**
-			 * 过滤掉值为null, undefined, ''情况
-			 */
-			if (param[key] || param[key] === false || param[key] === 0  || (allowEmptyString && param[key] === '') ) {
-				paramArray.push(key + '=' + encodeURIComponent(param[key]));
-			}
-		}
-
-		if (/(JSONP|GET|DELETE)$/.test(options.method) && paramArray.length > 0) {
-			url += (url.indexOf('?') > -1 ? '&' : '?') + paramArray.join('&');
-		}
+		let { url, param, paramArray } = rebuildURLAndParam(options);
 
 		let headers = {
 			'Accept': '*/*',
 			'X-Requested-With': 'XMLHttpRequest'
 		};
-		let method = options.method;
-
 		let body = undefined;
 
 		// 主动添加Header
-		if ((/(PUT|POST|DELETE)$/.test(options.method))) { // PUT + POST + DELETE
-			headers['Content-Type'] = isJson
-				? `application/json;charset=utf-8` 
-				: `application/x-www-form-urlencoded`;
+		if ((/(PUT|POST|DELETE)$/.test(method))) { // PUT + POST + DELETE
+			headers['Content-Type'] = `application/json${isJson ? ';charset=utf-8' : 'x-www-form-urlencoded' }`;
 			if (isJson) {
-				body = typeof options.param === 'object'
+				body = typeof param === 'object'
 					? JSON.stringify(param)
 					: undefined;
 			} else {
@@ -244,10 +207,9 @@ class HttpAdapter {
 					? `data=${encodeURIComponent(JSON.stringify(param))}` // 业务需要
 					: paramArray.join('&');
 			}
-		} else if (options.method === 'FORM') {
-
-			// headers['Content-Type'] = 'multipart/form-data';
-			headers['Content-Type'] = null; // 自动生成代码片段, 携带boundary=[hash], 否则后端无法接受
+		} else if (method === 'FORM') {
+			// 自动生成代码片段‘multipart/form-data’, 携带boundary=[hash], 否则后端无法接受
+			headers['Content-Type'] = null;
 			method = 'POST';
 
 			let formData = new FormData();
@@ -267,14 +229,13 @@ class HttpAdapter {
 			body = formData;
 		}
 
-		headers = { ...headers, ...options.headers };
+		// HTTP basic authentication
+		if (options.auth) {
+			let { username = '', password = '' }  = options.auth;
+			headers.Authorization = 'Basic ' + window.btoa(username + ':' + password);
+		}
 
-		// TODO: HTTP basic authentication
-		// if (options.auth) {
-		// 	let { username = '', password = '' }  = options.auth.username || '';
-		// 	headers.Authorization = 'Basic ' + window.btoa(username + ':' + password);
-		// }
-		
+		headers = { ...headers, ...options.headers };
 		/**
 		 * 清理headers
 		 */
