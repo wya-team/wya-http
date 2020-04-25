@@ -4,6 +4,8 @@ const port = 8833;
 
 http
 	.createServer((req, res) => {
+		console.log(req.method, req.url);
+
 		// 处理CORS
 		res.setHeader('Access-Control-Allow-Origin', "*");
 		res.setHeader('Access-Control-Allow-Credentials', true);
