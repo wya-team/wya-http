@@ -7,6 +7,7 @@ import http from 'http';
 import https from 'https';
 import $url from 'url';
 import zlib from 'zlib';
+import { http as httpFollow, https as httpsFollow } from 'follow-redirects';
 
 const toString = Object.prototype.toString;
 const isStream = val => {
@@ -19,8 +20,7 @@ class HttpAdapter {
 	static http = (opts = {}) => {
 		return new Promise((resolve, reject) => {
 			const { getInstance } = opts;
-			let { protocol, body, ...requestOptions } = HttpAdapter.getOptions(opts);
-			let transport = protocol === 'https:' ? https : http;
+			let { transport, body, ...requestOptions } = HttpAdapter.getOptions(opts);
 
 			let request;
 			let cancel;
@@ -129,7 +129,7 @@ class HttpAdapter {
 	}
 
 	static getOptions = (options) => {
-		let { agent, method, requestType } = options;
+		let { agent, method, requestType, maxRedirects } = options;
 		let { url, param, paramArray } = rebuildURLAndParam(options);
 		let { protocol = 'http:', port, hostname, auth: parseAuth } = $url.parse(url);
 
@@ -179,8 +179,19 @@ class HttpAdapter {
 			}
 		}
 
+
+		const isHttps = protocol === 'https:';
+		let transport;
+
+		// 是否重定向
+		if (maxRedirects === 0) {
+			transport = isHttps ? https : http;
+		} else {
+			transport = isHttps ? httpsFollow : httpFollow;
+		}
+
 		return {
-			protocol,
+			// for http or https
 			hostname,
 			port,
 			path: url.replace(/^\?/, ''),
@@ -188,7 +199,11 @@ class HttpAdapter {
 			body,
 			headers,
 			agent,
-			auth
+			auth,
+			maxRedirects,
+
+			// extra
+			transport
 		};
 	};
 }

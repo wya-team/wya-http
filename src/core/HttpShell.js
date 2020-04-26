@@ -121,7 +121,7 @@ class HttpShell {
 				});
 			}
 
-			let { url, param, type, localData, requestType, restful } = opts;
+			let { url, param, type, localData, requestType } = opts;
 
 			if (!/[a-zA-z]+:\/\/[^\s]*/.test(url)){
 				let combo = url.split('?'); // 避免before带上?token=*之类

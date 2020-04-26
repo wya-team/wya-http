@@ -13,9 +13,6 @@ export default {
 	headers: {
 		// Accept: 'application/json',
 	},
-	useXHR: false,
-	async: true,
-	restful: false,
 	debug: false,
 	timeout: 20, // 单位s
 	onOther: noop,
@@ -30,6 +27,15 @@ export default {
 	 * 返回延迟
 	 */
 	delay: undefined, // 单位s
+
+
+	// for browser
+	useXHR: false,
+	async: true,
+	
+	// for node
+	maxRedirects: undefined,
+	
 	/**
 	 * TODO
 	 */
