@@ -75,7 +75,9 @@ class HttpAdapter {
 							onError(new HttpError({
 								code: ERROR_CODE.HTTP_STATUS_ERROR,
 								httpStatus: res.statusCode,
-								exception: error
+								exception: error,
+								// 通常用于maxRedirects = 0时，获取额外的信息
+								data: res
 							}));
 						});
 
