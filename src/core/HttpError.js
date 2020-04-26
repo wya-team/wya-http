@@ -27,9 +27,15 @@ export const ERROR_CODE = {
 	HTTP_CONTENT_EXCEEDED: 'HTTP_CONTENT_EXCEEDED'
 };
 
+const DEFAULT_EXCEPTION = {};
+
 class HttpError {
 	static output = (target = {}) => {
-		target.code && console.log(`[@wya/http]: ${target.code}`);
+		const { log, error } = console;
+		target.code && (
+			log(`[@wya/http]: ${target.code}`),
+			target.exception !== DEFAULT_EXCEPTION && (error || log)(`[@wya/http]: ${target.exception}`)
+		);
 	}
 	constructor(options = {}) {
 		if (options.exception instanceof HttpError) {
@@ -41,7 +47,7 @@ class HttpError {
 			httpStatus,
 			msg,
 			code,
-			exception = {},
+			exception = DEFAULT_EXCEPTION,
 			data
 		} = options;
 
