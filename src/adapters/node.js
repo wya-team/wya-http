@@ -65,7 +65,8 @@ class HttpAdapter {
 							) {
 								onError(new HttpError({
 									code: ERROR_CODE.HTTP_CONTENT_EXCEEDED,
-									httpStatus: res.statusCode
+									httpStatus: res.statusCode,
+									data: res
 								}));
 							}
 						});
@@ -76,7 +77,6 @@ class HttpAdapter {
 								code: ERROR_CODE.HTTP_STATUS_ERROR,
 								httpStatus: res.statusCode,
 								exception: error,
-								// 通常用于maxRedirects = 0时，获取额外的信息
 								data: res
 							}));
 						});
@@ -93,6 +93,7 @@ class HttpAdapter {
 					onError(new HttpError({
 						code: ERROR_CODE.HTTP_STATUS_ERROR,
 						httpStatus: res.statusCode,
+						data: res
 					}));
 				}
 			});
