@@ -61,8 +61,11 @@ class HttpAdapter {
 			};
 
 			request.onreadystatechange = () => {
-				if (!request || request.readyState !== 4) return;
-				if (request.status === 0 && request.__ABORTED__ === true) return; // 主动取消
+				if (
+					!request 
+					|| request.readyState !== 4
+					|| (request.status === 0 && request.__ABORTED__ === true) // 主动取消
+				) return;
 
 				if (request.status >= 200 && request.status < 300) {
 					debug && console.timeEnd(`[@wya/http]: ${tag}`);
@@ -125,21 +128,30 @@ class HttpAdapter {
 				try {
 					request.responseType = responseType;
 				} catch (e) {
-					if (responseType !== 'json') {
-						throw e;
-					}
+					console.error(`[@wya/http]: ${responseType} responseType not allowed`);
 				}
 			}
 
-			
 			for (const h in headers) {
 				if (headers.hasOwnProperty(h)) {
 					request.setRequestHeader(h, headers[h]);
 				}
 			}
 
-			// 强制写入，用于取消
-			options._abort = request.abort;
+			// 可以不注入：用于取消，主要考虑如果已经超时了，没有强制取消，造成资源浪费; 
+			options._abort = () => {
+				if (
+					!request 
+					|| request.status !== 0 // 是否结束状态，异常Error时也是0
+					|| request.__ABORTED__ === true
+				) return;
+
+				try {
+					request.abort && request.abort();
+				} catch (e) { 
+					console.error(`[@wya/http]: abort ${e.message}`);
+				}
+			};
 
 			request.send(body);
 		});

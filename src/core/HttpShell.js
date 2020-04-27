@@ -53,6 +53,7 @@ class HttpShell {
 
 		// 超时或者取消请求（会有数据，但不操作)
 		let _setOver = null;
+		let _timer = null;
 		try {
 			options = await this._getRequestOptions(options);
 			const request = this._getApiPromise(options);
@@ -60,6 +61,7 @@ class HttpShell {
 			const cancel = new Promise((_, reject) => {
 				_setOver = e => {
 					delete options._setOver;
+					this._clearTimer(options);
 					this._beforeOver(options);
 					reject(e);
 				};
@@ -75,7 +77,8 @@ class HttpShell {
 					request,
 					cancel,
 					new Promise((_, reject) => {
-						setTimeout(() => {
+						// 强制写入，用于结束超时操作
+						options._timer = setTimeout(() => {
 							this._beforeOver(options);
 							reject(new HttpError({
 								code: ERROR_CODE.HTTP_REQUEST_TIMEOUT,
@@ -107,6 +110,13 @@ class HttpShell {
 
 		if (!localData && loading) {
 			onLoaded({ options });
+		}
+	}
+
+	_clearTimer(options = {}) {
+		if (options._timer) {
+			clearTimeout(options._timer);
+			delete options._timer;
 		}
 	}
 
@@ -164,6 +174,7 @@ class HttpShell {
 				: this.http(options);
 
 			let done = next => res => {
+				this._clearTimer(options);
 				this._beforeOver(options);
 				next(res);
 			};

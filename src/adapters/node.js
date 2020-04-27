@@ -106,8 +106,19 @@ class HttpAdapter {
 			getInstance && getInstance($param);	
 			HttpHelper.add($param);
 
-			// 强制写入，用于取消
-			options._abort = request.abort;
+			// 可以不注入：用于取消，主要考虑如果已经超时了，没有强制取消，造成资源浪费; 
+			options._abort = () => {
+				if (
+					!request 
+					|| request.aborted === true
+				) return;
+
+				try {
+					request.abort && request.abort();
+				} catch (e) { 
+					console.error(`[@wya/http]: abort ${e.message}`);
+				}
+			};
 
 			isStream(body) 
 				? body.pipe(request)
