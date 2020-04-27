@@ -48,7 +48,9 @@ class HttpError {
 			msg,
 			code,
 			exception = DEFAULT_EXCEPTION,
-			data
+			data,
+			request,
+			headers
 		} = options;
 
 		this.exception = exception;
@@ -61,6 +63,9 @@ class HttpError {
 		this.msg = msg || exception.msg || exception.message || '';
 		this.code = code;
 		this.data = data;
+
+		this.headers = headers || {};
+		this.request = request;
 	}
 }
 

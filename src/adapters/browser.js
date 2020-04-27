@@ -3,132 +3,170 @@ import HttpHelper from '../core/HttpHelper';
 import { rebuildURLAndParam } from '../utils/index';
 
 class HttpAdapter {
-	static http = (opts = {}) => {
+	static http = (options = {}) => {
 		let {
 			getInstance,
 			method,
-			useXHR
-		} = opts;
+			useXHR,
+			onProgress
+		} = options;
 
-		let fn = (useXHR || /(JSONP|FORM)$/.test(method) || typeof fetch === 'undefined')  
+		let fn = (useXHR  || typeof onProgress === 'function' || /(JSONP|FORM)$/.test(method) || typeof fetch === 'undefined')  
 			? HttpAdapter.XHRInvoke 
 			: HttpAdapter.fetchInvoke;
 
 		// let fn = HttpAdapter.XHRInvoke;
-		return fn(opts);
+		return fn(options);
 	}
 
-	static XHRInvoke = (opts = {}) => {
+	static XHRInvoke = (options = {}) => {
 		return new Promise((resolve, reject) => {
-			let {
-				getInstance,
-				onProgress,
-				url,
-				param,
-				method,
-				headers,
-				async,
-				debug,
-				credentials
-			} = opts;
+			const { getInstance, onProgress, async, debug, timeout, credentials, responseType } = options;
+			const { url, method, headers, body } = HttpAdapter.getOptions(options); 
 
-			let xhr = new XMLHttpRequest();
-			let cancel = HttpAdapter.cancel.bind(null, { xhr, options: opts, reject });
-			let $param = { xhr, cancel, request: xhr, options: opts };
+			let request = new XMLHttpRequest();
+			let cancel = HttpAdapter.cancel.bind(null, { request, options, reject });
+			let $param = { cancel, request, options };
 
-			let tag = `${url}: ${new Date().getTime()}`;
+			let tag = `${options.url}: ${new Date().getTime()}`;
 
 			debug && console.time(`[@wya/http]: ${tag}`);
 			// 用于取消
 			getInstance && getInstance($param);
 			HttpHelper.add($param);
 
-			xhr.onreadystatechange = () => {
-				if (xhr.readyState == 4) {
-					if (xhr.status >= 200 && xhr.status < 300) {
-						debug && console.timeEnd(`[@wya/http]: ${tag}`);
-						/**
-						 * TODO: 内部解析XML
-						 */
-						resolve(xhr.responseText || { httpStatus: xhr.status });
-					} else {
-						if (xhr.status === 0 && xhr.__ABORTED__ === true){
-							// 主动取消
-							return;
-						}
-						reject(new HttpError({
-							code: ERROR_CODE.HTTP_STATUS_ERROR,
-							httpStatus: xhr.status,
-						}));
-					}
-					HttpHelper.remove(xhr);
-					xhr = null;
+			let onSuccess = (data) => {
+				HttpHelper.remove(request);
+				resolve({
+					data,
+					httpStatus: request.status,
+					headers: {},
+					request
+				});
+
+				request = null;
+			};
+
+			let onError = (code, exception) => {
+				HttpHelper.remove(request);
+				reject(new HttpError({
+					code,
+					exception,
+					httpStatus: request.status,
+					headers: {},
+					request,
+				}));
+
+				request = null;
+			};
+
+			request.onreadystatechange = () => {
+				if (!request || request.readyState !== 4) return;
+				if (request.status === 0 && request.__ABORTED__ === true) return; // 主动取消
+
+				if (request.status >= 200 && request.status < 300) {
+					debug && console.timeEnd(`[@wya/http]: ${tag}`);
+					
+					let data = !responseType || responseType === 'text' 
+						? request.responseText
+						: request.response;
+
+					onSuccess(data);
+				} else {
+					onError(ERROR_CODE.HTTP_STATUS_ERROR);
 				}
 			};
 
-			const result = HttpAdapter.getOptions(opts); 
+			// Clean up request
+			let createClean = (code) => (error) => {
+				if (!request || request.__ABORTED__) return;
+				onError(code, error);
+			};
+			request.onabort = createClean(ERROR_CODE.HTTP_CANCEL);
+			request.onerror = createClean(ERROR_CODE.HTTP_STATUS_ERROR);
+			request.ontimeout = createClean(ERROR_CODE.HTTP_REQUEST_TIMEOUT);
 
-			if (method === 'JSONP') {
-				if (!param['callback']) {
-					reject({
-						status: 0
-					});
+			if (options.method === 'JSONP') {
+				if (!options.param['callback']) {
+					onError(ERROR_CODE.HTTP_CODE_ILLEGAL);
 				}
 
-				window[param['callback']] = (data) => {
-					resolve(data);
-				};
+				window[options.param['callback']] = onSuccess;
 				let script = document.createElement("script");
 				let head = document.getElementsByTagName("head")[0];
-				script.src = result.url;
+				script.src = url;
 				head.appendChild(script);
 				return;
 			} 
 
-			if (method === 'FORM') {
-				xhr.upload.onprogress = (e) => {
-					// e.lengthComputable
-					if (e.total > 0) {
-						e._percent = e.loaded / e.total * 100;
-						e.percent = (e._percent).toFixed(2);
-					}
-					onProgress && onProgress(e);
-				};
+			if (typeof onProgress === 'function') {
+				if (options.method === 'FORM') {
+					request.upload && request.upload.addEventListener('progress', (e) => {
+						// e.lengthComputable
+						if (e.total > 0) {
+							e._percent = e.loaded / e.total * 100;
+							e.percent = (e._percent).toFixed(2);
+						}
+						onProgress(e);
+					});
+				} else {
+					request.addEventListener('progress', onProgress);
+				}
 			}
-			xhr.open(result.method, result.url, async);
-			xhr.withCredentials = credentials === 'omit' ? false : !!credentials;
+			
+			request.open(method, url, async);
+			request.withCredentials = credentials === 'omit' ? false : !!credentials;
 
-			for (const h in result.headers) {
-				if (result.headers.hasOwnProperty(h)) {
-					xhr.setRequestHeader(h, result.headers[h]);
+			if (options.method !== 'FORM') {
+				request.timeout = timeout * 1000;
+			}
+
+			if (responseType) {
+				try {
+					request.responseType = responseType;
+				} catch (e) {
+					if (responseType !== 'json') {
+						throw e;
+					}
 				}
 			}
 
-			xhr.send(result.body);
+			
+			for (const h in headers) {
+				if (headers.hasOwnProperty(h)) {
+					request.setRequestHeader(h, headers[h]);
+				}
+			}
+
+			// 强制写入，用于取消
+			options._abort = request.abort;
+
+			request.send(body);
 		});
 	}
-	static cancel({ xhr, options, reject }) {
-		if (xhr instanceof XMLHttpRequest) {
-			xhr.__ABORTED__ = true;
-			xhr.abort();
-			xhr = null;
+	static cancel({ request, options, reject }) {
+		HttpHelper.remove(request);
+
+		let error = new HttpError({
+			code: ERROR_CODE.HTTP_CANCEL,
+			request,
+		});
+		options._setOver && options._setOver(error);
+		reject(error);
+
+		if (request instanceof XMLHttpRequest) {
+			request.__ABORTED__ = true;
+			request.abort();
+
+			// clean up
+			request = null;
 		}
-		options.setOver && options.setOver(new HttpError({
-			code: ERROR_CODE.HTTP_CANCEL
-		}));
-
-		// TODO: 检验如果不reject会不会造成内存泄漏
-		// reject();
 	}
-	static fetchInvoke = (opts = {}) => {
-		const {
-			debug,
-			credentials,
-			getInstance
-		} = opts;
-		let { url, headers, body, method } = HttpAdapter.getOptions(opts);
+	static fetchInvoke = (options = {}) => {
+		const { debug, credentials, getInstance } = options;
+		const { url, headers, body, method } = HttpAdapter.getOptions(options);
 
-		let tag = `${opts.url}: ${new Date().getTime()}`;
+		let tag = `${options.url}: ${new Date().getTime()}`;
 
 		debug && console.time(`[@wya/http]: ${tag}`);
 
@@ -144,44 +182,61 @@ class HttpAdapter {
 				HttpHelper.remove(request);
 				debug && console.timeEnd(`[@wya/http]: ${tag}`);
 			};
+
+			let onSuccess = (res, data) => {
+				resolve({
+					data,
+					httpStatus: res.status,
+					headers: {},
+					request
+				});
+
+				finallyHack();
+				request = null;
+			};
+
+			let onError = (res, code, exception) => {
+				reject(new HttpError({
+					code,
+					exception,
+					httpStatus: res.status,
+					headers: {},
+					request,
+				}));
+
+				finallyHack();
+				request = null;
+			};
 							
-			request = fetch(url, { headers, body, credentials, method }).then((res = {}) => {
+			request = fetch(url, { 
+				headers, 
+				body, 
+				credentials, 
+				method 
+			}).then((res = {}) => {
 				if (res.status >= 200 && res.status < 300) {
-					// 这里不用res.json, 与xhr同步
 					res.text()
-						.then(responseText => {
-							resolve(responseText);
+						.then(data => {
+							onSuccess(res, data);
 						})
 						.catch(error => {
-							reject(new HttpError({
-								code: ERROR_CODE.HTTP_RESPONSE_PARSING_FAILED,
-								httpStatus: res.status,
-								exception: error
-							}));
+							onError(res, ERROR_CODE.HTTP_RESPONSE_PARSING_FAILED, error);
 						});
 				} else {
-					reject(new HttpError({
-						code: ERROR_CODE.HTTP_STATUS_ERROR,
-						httpStatus: res.status,
-					}));
+					onError(res, ERROR_CODE.HTTP_STATUS_ERROR);
 				}
-				finallyHack();
-			}).catch((res) => { // 跨域或其他
-				reject(new HttpError({
-					code: ERROR_CODE.HTTP_STATUS_ERROR,
-					httpStatus: res.status,
-				}));
-				finallyHack();
+			}).catch((error) => { // 跨域或其他
+				onError({}, ERROR_CODE.HTTP_STATUS_ERROR, error);
 			});
 
-			cancel = HttpAdapter.cancel.bind(null, { options: opts, reject });
-			let $param = { cancel, request, options: opts };
+			cancel = HttpAdapter.cancel.bind(null, { options, reject });
+			let $param = { cancel, request, options };
 			// 用于取消
 			getInstance && getInstance($param);	
 			HttpHelper.add($param);
 		});
 	}
-	static getOptions = (options) => {
+	static getOptions = (options = {}) => {
 		let { requestType, method } = options;
 
 		let isJson = requestType === 'json';

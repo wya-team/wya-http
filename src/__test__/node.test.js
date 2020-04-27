@@ -167,6 +167,67 @@ describe('node.js', () => {
 		}
 	});
 
+	test('server验证: 非JSON返回', async () => {
+		let count = 0;
+		try {
+			let options = {
+				url: 'http://0.0.0.0:8833/?result=<svg></svg>',
+				credentials: 'omit',
+				debug: false,
+				onLoading: () => {
+					count++;
+				},
+				onLoaded: () => {
+					count++;
+				},
+				onAfter: ({ response }) => {
+					expect(decodeURI(response.data)).toBe("<svg></svg>");
+				}
+			};
+
+			let res = await $.ajax(options);
+		} catch (res) {
+			expect(res.code).toBe(ERROR_CODE.HTTP_RESPONSE_PARSING_FAILED);
+		} finally {
+			expect(count).toBe(2);
+		}
+	});
+
+	test('server验证: 无返回值，但为200', async () => {
+		let count = 0;
+		try {
+			let options = {
+				url: 'http://0.0.0.0:8833/?result=',
+				credentials: 'omit',
+				debug: false,
+				onLoading: () => {
+					count++;
+				},
+				onLoaded: () => {
+					count++;
+				},
+				onAfter: ({ response }) => {
+					expect(response.httpStatus).toBe(200);
+
+					return {
+						status: 1,
+						data: {
+							user: 'wya'
+						}
+					};
+				}
+			};
+
+			let res = await $.ajax(options);
+
+			expect(res.data.user).toBe('wya');
+		} catch (res) {
+			console.log(res);
+		} finally {
+			expect(count).toBe(2);
+		}
+	});
+	
 	test('HttpHelper', async () => {
 		try {
 			expect(HttpHelper.requests.length).toBe(0);

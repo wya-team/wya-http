@@ -17,22 +17,33 @@ const isStream = val => {
 };
 
 class HttpAdapter {
-	static http = (opts = {}) => {
+	static http = (options = {}) => {
 		return new Promise((resolve, reject) => {
-			const { getInstance } = opts;
-			let { transport, body, ...requestOptions } = HttpAdapter.getOptions(opts);
+			const { getInstance, responseType, maxContentLength } = options;
+			let { transport, body, ...requestOptions } = HttpAdapter.getOptions(options);
 
 			let request;
 			let cancel;
 			
-			let onSuccess = (data) => {
+			let onSuccess = (res = {}, data) => {
 				HttpHelper.remove(request);
-				resolve(data);
+				resolve({
+					data,
+					httpStatus: res.statusCode,
+					headers: res.headers,
+					request: res.req || request
+				});
 			};
 
-			let onError = (error) => {
+			let onError = (res, code, exception) => {
 				HttpHelper.remove(request);
-				resolve(error);
+				reject(new HttpError({
+					code,
+					exception,
+					httpStatus: res.statusCode,
+					headers: res.headers,
+					request: res.req || request,
+				}));
 			};
 
 			request = transport.request(requestOptions, (res) => {
@@ -48,11 +59,8 @@ class HttpAdapter {
 							break;
 					}
 
-					if (opts.responseType === 'stream') {
-						onSuccess({
-							status: 1,
-							data: stream
-						});
+					if (responseType === 'stream') {
+						onSuccess(res, { status: 1, data: stream });
 					} else {
 						let responseBuffer = [];
 						stream.on('data', (chunk) => {
@@ -60,58 +68,46 @@ class HttpAdapter {
 
 							// 如果指定，请确保内容长度不超过maxContentLength
 							if (
-								opts.maxContentLength > -1 
-								&& Buffer.concat(responseBuffer).length > opts.maxContentLength
+								maxContentLength > -1 
+								&& Buffer.concat(responseBuffer).length > maxContentLength
 							) {
-								onError(new HttpError({
-									code: ERROR_CODE.HTTP_CONTENT_EXCEEDED,
-									httpStatus: res.statusCode,
-									data: res
-								}));
+								onError(res, ERROR_CODE.HTTP_CONTENT_EXCEEDED);
 							}
 						});
 
 						stream.on('error', (error) => {
 							if (req.aborted) return;
-							onError(new HttpError({
-								code: ERROR_CODE.HTTP_STATUS_ERROR,
-								httpStatus: res.statusCode,
-								exception: error,
-								data: res
-							}));
+							onError(res, ERROR_CODE.HTTP_STATUS_ERROR, error);
 						});
 
 						stream.on('end', () => {
 							let responseData = Buffer.concat(responseBuffer);
-							if (opts.responseType !== 'arraybuffer') {
+							if (responseType !== 'arraybuffer') {
 								responseData = responseData.toString('utf8');
 							}
-							onSuccess(responseData);
+							onSuccess(res, responseData);
 						});
 					}
 				} else {
-					onError(new HttpError({
-						code: ERROR_CODE.HTTP_STATUS_ERROR,
-						httpStatus: res.statusCode,
-						data: res
-					}));
+					onError(res, ERROR_CODE.HTTP_STATUS_ERROR);
 				}
 			});
 
 			// Handle errors
 			request.on('error', error => {
 				if (request.aborted) return;
-				reject(new HttpError({
-					code: ERROR_CODE.HTTP_STATUS_ERROR,
-					exception: error
-				}));
+				onError({}, ERROR_CODE.HTTP_STATUS_ERROR, error);
 			});
 
-			cancel = HttpAdapter.cancel.bind(null, { request, reject, options: opts });
-			let $param = { cancel, request, options: opts };
+			cancel = HttpAdapter.cancel.bind(null, { request, reject, options });
+
+			let $param = { cancel, request, options };
 			// 用于取消
 			getInstance && getInstance($param);	
 			HttpHelper.add($param);
+
+			// 强制写入，用于取消
+			options._abort = request.abort;
 
 			isStream(body) 
 				? body.pipe(request)
@@ -120,18 +116,17 @@ class HttpAdapter {
 	}
 
 	static cancel({ request, options, reject }) {
-		request && !request.aborted && request.abort();
-
+		HttpHelper.remove(request);
 		let error = new HttpError({
 			code: ERROR_CODE.HTTP_CANCEL
 		});
-		options.setOver && options.setOver(error);
+		options._setOver && options._setOver(error);
+		reject(error);
 
-		// TODO: 检验如果不reject会不会造成内存泄漏
-		// reject();
+		request && !request.aborted && request.abort();
 	}
 
-	static getOptions = (options) => {
+	static getOptions = (options = {}) => {
 		let { agent, method, requestType, maxRedirects } = options;
 		let { url, param, paramArray } = rebuildURLAndParam(options);
 		let { protocol = 'http:', port, hostname, auth: parseAuth } = $url.parse(url);
@@ -201,7 +196,7 @@ class HttpAdapter {
 			method,
 			body,
 			headers,
-			agent,
+			agent, // TODO: Keep-Alive选项
 			auth,
 			maxRedirects,
 
