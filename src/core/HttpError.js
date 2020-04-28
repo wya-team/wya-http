@@ -50,7 +50,8 @@ class HttpError {
 			exception = DEFAULT_EXCEPTION,
 			data,
 			request,
-			headers
+			headers,
+			responseExtra
 		} = options;
 
 		this.exception = exception;
@@ -64,8 +65,15 @@ class HttpError {
 		this.code = code;
 		this.data = data;
 
-		this.headers = headers || {};
-		this.request = request;
+		if (!responseExtra) return;
+		if (responseExtra instanceof Array) {
+			responseExtra.forEach((key) => {
+				this[key] = options[key];
+			});
+		} else {
+			this.headers = headers || {};
+			this.request = request;
+		}
 	}
 }
 

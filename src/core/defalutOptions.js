@@ -52,6 +52,14 @@ export default {
 	 * json | text | arraybuffer | blob | document ...
 	 */
 	responseType: 'text',
+
+	/**
+	 * 是否返回其他信息; 如headers, request等
+	 * ['headers', 'request']
+	 * @type {Boolean, Array}
+	 */
+	responseExtra: false,
+
 	/**
 	 * cors下请关闭
 	 */

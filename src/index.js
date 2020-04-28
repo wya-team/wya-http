@@ -1,5 +1,6 @@
 import HttpShell from './core/HttpShell';
 import HttpError from './core/HttpError';
+import HttpSuccess from './core/HttpSuccess';
 import HttpHelper from './core/HttpHelper';
 // 以上可以作为@wya/http-core
 
@@ -29,6 +30,19 @@ export {
 	HttpShell,
 	HttpAdapter,
 	HttpError,
+	HttpSuccess,
 	HttpHelper
 };
+
+// node需要使用require('xxx').default
 export default createHttpClient;
+
+// 兼容处理可以这样
+// module.exports = Object.assign(createHttpClient, {
+// 	ajax,
+// 	HttpShell,
+// 	HttpAdapter,
+// 	HttpError,
+// 	HttpSuccess,
+// 	HttpHelper
+// });

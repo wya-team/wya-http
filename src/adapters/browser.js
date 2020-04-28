@@ -1,4 +1,5 @@
 import HttpError, { ERROR_CODE } from '../core/HttpError';
+import HttpSuccess from '../core/HttpSuccess';
 import HttpHelper from '../core/HttpHelper';
 import { rebuildURLAndParam } from '../utils/index';
 
@@ -21,7 +22,7 @@ class HttpAdapter {
 
 	static XHRInvoke = (options = {}) => {
 		return new Promise((resolve, reject) => {
-			const { getInstance, onProgress, async, debug, timeout, credentials, responseType } = options;
+			const { getInstance, onProgress, async, debug, timeout, credentials, responseType, responseExtra } = options;
 			const { url, method, headers, body } = HttpAdapter.getOptions(options); 
 
 			let request = new XMLHttpRequest();
@@ -37,12 +38,13 @@ class HttpAdapter {
 
 			let onSuccess = (data) => {
 				HttpHelper.remove(request);
-				resolve({
+				resolve(new HttpSuccess({
 					data,
+					responseExtra,
 					httpStatus: request.status,
 					headers: {},
 					request
-				});
+				}));
 
 				request = null;
 			};
@@ -52,6 +54,7 @@ class HttpAdapter {
 				reject(new HttpError({
 					code,
 					exception,
+					responseExtra,
 					httpStatus: request.status,
 					headers: {},
 					request,
@@ -161,6 +164,7 @@ class HttpAdapter {
 
 		let error = new HttpError({
 			code: ERROR_CODE.HTTP_CANCEL,
+			responseExtra: options.responseExtra,
 			request,
 		});
 		options._setOver && options._setOver(error);
@@ -175,7 +179,7 @@ class HttpAdapter {
 		}
 	}
 	static fetchInvoke = (options = {}) => {
-		const { debug, credentials, getInstance } = options;
+		const { debug, credentials, responseExtra, getInstance } = options;
 		const { url, headers, body, method } = HttpAdapter.getOptions(options);
 
 		let tag = `${options.url}: ${new Date().getTime()}`;
@@ -196,12 +200,13 @@ class HttpAdapter {
 			};
 
 			let onSuccess = (res, data) => {
-				resolve({
+				resolve(new HttpSuccess({
 					data,
+					responseExtra,
 					httpStatus: res.status,
 					headers: {},
 					request
-				});
+				}));
 
 				finallyHack();
 				request = null;
@@ -211,6 +216,7 @@ class HttpAdapter {
 				reject(new HttpError({
 					code,
 					exception,
+					responseExtra,
 					httpStatus: res.status,
 					headers: {},
 					request,

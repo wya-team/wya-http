@@ -1,4 +1,5 @@
 import HttpError, { ERROR_CODE } from '../core/HttpError';
+import HttpSuccess from '../core/HttpSuccess';
 import HttpHelper from '../core/HttpHelper';
 import { rebuildURLAndParam } from '../utils/index';
 
@@ -19,7 +20,7 @@ const isStream = val => {
 class HttpAdapter {
 	static http = (options = {}) => {
 		return new Promise((resolve, reject) => {
-			const { getInstance, responseType, maxContentLength } = options;
+			const { getInstance, responseType, responseExtra, maxContentLength } = options;
 			let { transport, body, ...requestOptions } = HttpAdapter.getOptions(options);
 
 			let request;
@@ -27,12 +28,13 @@ class HttpAdapter {
 			
 			let onSuccess = (res = {}, data) => {
 				HttpHelper.remove(request);
-				resolve({
+				resolve(new HttpSuccess({
 					data,
+					responseExtra,
 					httpStatus: res.statusCode,
 					headers: res.headers,
 					request: res.req || request
-				});
+				}));
 			};
 
 			let onError = (res, code, exception) => {
@@ -40,6 +42,7 @@ class HttpAdapter {
 				reject(new HttpError({
 					code,
 					exception,
+					responseExtra,
 					httpStatus: res.statusCode,
 					headers: res.headers,
 					request: res.req || request,
@@ -129,6 +132,7 @@ class HttpAdapter {
 	static cancel({ request, options, reject }) {
 		HttpHelper.remove(request);
 		let error = new HttpError({
+			responseExtra: options.responseExtra,
 			code: ERROR_CODE.HTTP_CANCEL
 		});
 		options._setOver && options._setOver(error);
