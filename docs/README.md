@@ -255,17 +255,35 @@ ajax({
 ### `responseType` 
 
 - type: `String`
-- 默认值: `arraybuffer`
+- 默认值: `text`
 
-`arraybuffer|blob|document`
+`text|blob|document|json|arraybuffer`
 
 **示例**
 ```javascript
 ajax({
 	// ...,
-	responseType: 'arraybuffer'
+	responseType: 'text'
 });
 ```
+
+---
+
+### `responseExtra` 
+
+- type: `Boolean, Array`
+- 默认值: `false`
+
+`['headers', 'request']`
+
+**示例**
+```javascript
+ajax({
+	// ...,
+	responseExtra: 'text'
+});
+```
+
 ---
 
 ### `credentials` 
