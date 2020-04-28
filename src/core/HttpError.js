@@ -65,6 +65,9 @@ class HttpError {
 		this.code = code;
 		this.data = data;
 
+		// 隐藏属性
+		Object.defineProperty(this, 'responseExtra', { value: responseExtra });
+
 		if (!responseExtra) return;
 		if (responseExtra instanceof Array) {
 			responseExtra.forEach((key) => {
