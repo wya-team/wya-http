@@ -61,7 +61,7 @@ export const rebuildURLAndParam = (opts = {}) => {
 	}
 	/**
 	 * /repo/{books_id}/{article_id} 解析RESTFUL URL 或者动 态的;
-	 * TODO: 是否考虑一下情况 
+	 * TODO: 同时支持:和{}; 特殊场景：可选值情况 
 	 * -> /repo{/books_id}{/article_id}
 	 * -> /repo/:books_id/:article_id?page={page}
 	 * -> /repo/:books_id?/:article_id?page={page}
