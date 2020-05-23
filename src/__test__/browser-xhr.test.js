@@ -259,4 +259,49 @@ describe('browser-xhr.js', () => {
 			throw new Error(e.message);
 		}
 	});
+
+	test('async GET', async () => {
+		try {
+			let options = {
+				url: 'http://0.0.0.0:8833/',
+				credentials: 'omit',
+				async: false,
+				param: {
+					delay: 1,
+					result: JSON.stringify({
+						status: 1,
+						data: {}
+					})
+				}
+			};
+
+			let res = await $.ajax(options);
+			expect(res.status).toBe(1);
+		} catch (e) {
+			throw new Error(e.message);
+		}
+	});
+
+	test('async POST', async () => {
+		try {
+			let options = {
+				url: 'http://0.0.0.0:8833/',
+				credentials: 'omit',
+				async: false,
+				type: 'POST',
+				param: {
+					delay: 1,
+					result: JSON.stringify({
+						status: 1,
+						data: {}
+					})
+				}
+			};
+
+			let res = await $.ajax(options);
+			expect(res.status).toBe(1);
+		} catch (e) {
+			throw new Error(e.message);
+		}
+	});
 });

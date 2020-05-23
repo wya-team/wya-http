@@ -124,14 +124,21 @@ class HttpAdapter {
 			request.withCredentials = credentials === 'omit' ? false : !!credentials;
 
 			if (options.method !== 'FORM') {
-				request.timeout = timeout * 1000;
+				try {
+					request.timeout = timeout * 1000;
+				} catch (e) {
+					// 目前发现async下是不支持的
+					process.env.NODE_ENV !== 'test' 
+						&& console.error(`[@wya/http]: timeout not allowed`);
+				}
 			}
 
 			if (responseType) {
 				try {
 					request.responseType = responseType;
 				} catch (e) {
-					console.error(`[@wya/http]: ${responseType} responseType not allowed`);
+					process.env.NODE_ENV !== 'test' 
+						&& console.error(`[@wya/http]: ${responseType} responseType not allowed`);
 				}
 			}
 
@@ -157,6 +164,8 @@ class HttpAdapter {
 			};
 
 			request.send(body);
+
+			console.log(request.readyState, request.status, request.responseText);
 		});
 	}
 	static cancel({ request, options, reject }) {

@@ -24,7 +24,7 @@ http
 			.reduce((pre, cur) => {
 				let [key, value] = cur.split('=');
 
-				pre[key] = value;
+				pre[key] = decodeURIComponent(value);
 				return pre;
 			}, {});
 		
@@ -36,23 +36,20 @@ http
 				req.on('data', chuck =>  {  
 					postData += chuck;
 				});
-				req.on('end', () => resolve(postData));
+				req.on('end', () => {
+					resolve(JSON.parse(postData));
+				});
 			});
 		}
 
-		let { delay = 0.1, result } = { ...query, ...body };
+		let { 
+			delay = 0.1, 
+			result = JSON.stringify({ user: 'wya', login: 'wya-team', method: req.method, url: req.url })
+		} = { ...query, ...body };
 
 		setTimeout(() => {
-
-			res.end(
-				result || 
-				JSON.stringify({
-					user: 'wya',
-					login: 'wya-team',
-					method: req.method,
-					url: req.url,
-				})
-			);
+			console.log(result);
+			res.end(result);
 		}, delay * 1000);
 	}).listen(port, hostname, () => {
 		console.log(`Server running at http://${hostname}:${port}/`);
