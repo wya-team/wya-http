@@ -9,10 +9,17 @@ class HttpAdapter {
 			getInstance,
 			method,
 			useXHR,
-			onProgress
+			onProgress,
+			async
 		} = options;
 
-		let fn = (useXHR  || typeof onProgress === 'function' || /(JSONP|FORM)$/.test(method) || typeof fetch === 'undefined')  
+		let fn = (
+			useXHR
+			|| async === false
+			|| typeof onProgress === 'function' 
+			|| /(JSONP|FORM)$/.test(method) 
+			|| typeof fetch === 'undefined'
+		)  
 			? HttpAdapter.XHRInvoke 
 			: HttpAdapter.fetchInvoke;
 
