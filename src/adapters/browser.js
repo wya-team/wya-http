@@ -171,8 +171,6 @@ class HttpAdapter {
 			};
 
 			request.send(body);
-
-			console.log(request.readyState, request.status, request.responseText);
 		});
 	}
 	static cancel({ request, options, reject }) {
