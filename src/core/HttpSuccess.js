@@ -9,7 +9,7 @@ class HttpSuccess {
 		} = options;
 
 		this.httpStatus = httpStatus;
-		this.data = data;
+		this.data = data instanceof ArrayBuffer ? { data } : data;
 
 		if (!responseExtra) return;
 		if (responseExtra instanceof Array) {

@@ -10,7 +10,8 @@ class HttpAdapter {
 			method,
 			useXHR,
 			onProgress,
-			async
+			async,
+			responseType,
 		} = options;
 
 		let fn = (
@@ -19,6 +20,7 @@ class HttpAdapter {
 			|| typeof onProgress === 'function' 
 			|| /(JSONP|FORM)$/.test(method) 
 			|| typeof fetch === 'undefined'
+			|| responseType === 'arraybuffer'
 		)  
 			? HttpAdapter.XHRInvoke 
 			: HttpAdapter.fetchInvoke;
