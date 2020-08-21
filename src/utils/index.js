@@ -59,26 +59,34 @@ export const rebuildURLAndParam = (opts = {}) => {
 			paramArray: []
 		};
 	}
+	
 	/**
-	 * /repo/{books_id}/{article_id} 解析RESTFUL URL 或者动 态的;
-	 * TODO: 同时支持:和{}; 特殊场景：可选值情况 
-	 * -> /repo{/books_id}{/article_id}
+	 * 解析RESTFUL URL 或者动态的;
+	 * 支持以下场景:
+	 * -> /repo/{books_id}/{article_id}
 	 * -> /repo/:books_id/:article_id?page={page}
-	 * -> /repo/:books_id?/:article_id?page={page}
+	 * -> 127.0.0.1:8080/*
+	 *
+	 * 注：
+	 * 1. 当无值会把前缀'/'一起删除，
+	 * 2. 如果是 config.article_id 会删除整个config对象
 	 */
-	let dynamic = /\{([\s\S]{1,}?(\}?)+)\}/g;
+	let dynamic = /(\/?{[^?\/\&]+|\/?:[^\d][^?\/\&]+)/g;
 	if (dynamic.test(url)) {
 		let delTmp = [];
 		url = url.replace(dynamic, key => {
-			let k = key.replace(/(\{|\}|\s)/g, '');
-			delTmp.push(k);
-			return getPropByPath(param, k).value || key;
+			let k = key.replace(/({|}|\s|:|\/)/g, '');
+			let value = getPropByPath(param, k).value;
+			
+			delTmp.push(k.split('.')[0]); // 无法删除对应的嵌套，删除整个对象
+			return value 
+				? `${key.indexOf('/') === 0 ? '/' : ''}${value}` 
+				: '';
 		});
-
-		delTmp.forEach(i => param[i] && delete param[i]);
+		
+		delTmp.forEach(i => typeof param[i] !== 'undefined' && delete param[i]);
 	}
 	
-
 	let paramArray = [];
 	for (let key in param) {
 		/**

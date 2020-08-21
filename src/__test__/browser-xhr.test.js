@@ -28,6 +28,33 @@ describe('browser-xhr.js', () => {
 		}
 	});
 
+	test('动态的URL验证', async () => {
+		try {
+			let res = await $.ajax({
+				type: 'POST',
+				url: 'http://0.0.0.0:8833{config.prefix}/repo/{extra.books_id}/:extra.article_id/:method/:author?page={page}&size={size}',
+				param: {
+					config: {
+						prefix: '/api'
+					},
+					extra: {
+						books_id: 1,
+						article_id: 1	
+					},
+					method: 'delete',
+					author: '',
+					page: 200,
+					
+					role: 'admin'
+				},
+				responseExtra: true
+			});
+
+		} catch (e) {
+			expect(e.url).toBe(`/api/repo/1/1/delete?page=200&size=`);
+		}
+	});
+
 	test('localData验证: status = 1', async () => {
 		try {
 			let options = {
