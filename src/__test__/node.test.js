@@ -5,6 +5,7 @@ describe('node.js', () => {
 	// 设置20秒超时
 	jest.setTimeout(20000); 
 	let $ = createHttpClient({
+		dynamic: true,
 		onAfter: (res) => {
 			expect(typeof res).toBe('object');
 		},

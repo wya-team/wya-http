@@ -6,6 +6,7 @@ describe('browser-xhr.js', () => {
 	jest.setTimeout(20000); 
 	let $ = createHttpClient({
 		useXHR: true,
+		dynamic: true,
 		onAfter: (res) => {
 			expect(typeof res).toBe('object');
 		},

@@ -10,6 +10,7 @@ describe('browser-fetch.js', () => {
 	jest.setTimeout(20000); 
 	let $ = createHttpClient({
 		useXHR: false,
+		dynamic: true,
 		onAfter: (res) => {
 			expect(typeof res).toBe('object');
 		},

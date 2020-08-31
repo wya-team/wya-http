@@ -50,7 +50,7 @@ export const compose = (...funcs) => {
 export const noop = () => {};
 
 export const rebuildURLAndParam = (opts = {}) => {
-	let { url, param, allowEmptyString, method } = opts;
+	let { url, param, allowEmptyString, method, dynamic } = opts;
 
 	if (!param) {
 		return {
@@ -71,20 +71,22 @@ export const rebuildURLAndParam = (opts = {}) => {
 	 * 1. 当无值会把前缀'/'一起删除，
 	 * 2. 如果是 config.article_id 会删除整个config对象
 	 */
-	let dynamic = /(\/?{[^?\/\&]+|\/?:[^\d][^?\/\&]+)/g;
-	if (dynamic.test(url)) {
-		let delTmp = [];
-		url = url.replace(dynamic, key => {
-			let k = key.replace(/({|}|\s|:|\/)/g, '');
-			let value = getPropByPath(param, k).value;
+	if (dynamic) {
+		let regex = /(\/?{[^?\/\&]+|\/?:[^\d][^?\/\&]+)/g;
+		if (regex.test(url)) {
+			let delTmp = [];
+			url = url.replace(regex, key => {
+				let k = key.replace(/({|}|\s|:|\/)/g, '');
+				let value = getPropByPath(param, k).value;
+				
+				delTmp.push(k.split('.')[0]); // 无法删除对应的嵌套，删除整个对象
+				return value 
+					? `${key.indexOf('/') === 0 ? '/' : ''}${value}` 
+					: '';
+			});
 			
-			delTmp.push(k.split('.')[0]); // 无法删除对应的嵌套，删除整个对象
-			return value 
-				? `${key.indexOf('/') === 0 ? '/' : ''}${value}` 
-				: '';
-		});
-		
-		delTmp.forEach(i => typeof param[i] !== 'undefined' && delete param[i]);
+			delTmp.forEach(i => typeof param[i] !== 'undefined' && delete param[i]);
+		}
 	}
 	
 	let paramArray = [];

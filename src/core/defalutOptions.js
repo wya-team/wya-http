@@ -82,6 +82,11 @@ export default {
 	timeout: 20,
 
 	/**
+	 * 启用动态路由
+	 */
+	dynamic: false,
+	
+	/**
 	 * 不过滤 ''
 	 */
 	allowEmptyString: false,
