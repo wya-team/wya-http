@@ -197,9 +197,10 @@ class HttpShell {
 						? data
 						: JSON.parse(data);
 
+					data = data instanceof Array ? { data } : data;
 					return {
 						...extraOptions,
-						...data,
+						...data
 					};
 				})
 				.catch((e) => {
