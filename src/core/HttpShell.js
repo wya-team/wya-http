@@ -79,6 +79,7 @@ class HttpShell {
 					new Promise((_, reject) => {
 						// 强制写入，用于结束超时操作
 						options._timer = setTimeout(() => {
+							// TODO: 超时依然走catch 或者 不执行任何操作(delete options.setOver); 
 							this._beforeOver(options);
 							reject(new HttpError({
 								code: ERROR_CODE.HTTP_REQUEST_TIMEOUT,
