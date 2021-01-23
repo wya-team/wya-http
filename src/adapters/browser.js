@@ -246,7 +246,8 @@ class HttpAdapter {
 				headers, 
 				body, 
 				credentials, 
-				method 
+				method,
+				// TODO: mode
 			}).then((res = {}) => {
 				if (res.status >= 200 && res.status < 300) {
 					res.text()
