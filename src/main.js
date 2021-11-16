@@ -28,7 +28,8 @@ export const ajaxFn = (defaultOptions = {}) => userOptions => {
 			try {
 				options = await onBefore(options, xhr) || options;
 			} catch (e) {
-				console.log('[wya-fetch]', e);
+				reject(e);
+				return;
 			}
 		}
 		// -- end --
