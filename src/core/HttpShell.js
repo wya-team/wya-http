@@ -258,7 +258,7 @@ class HttpShell {
 					reject(response);
 					return;
 				default:
-					let other = onOther && onOther({ response, resolve, reject });
+					let other = onOther && onOther({ options, response, resolve, reject });
 					if (!other || typeof other !== 'object' || !other.then) {
 						let error = {
 							...new HttpError({
