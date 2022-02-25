@@ -17,7 +17,7 @@ const createHttpClient = (registerOptions = {}) => {
 
 	const client = {};
 	allowMethod.forEach(m => {
-		client[m] = async (userOptions) => {
+		client[m] = (userOptions) => {
 			return clientWrapper[m](userOptions);
 		};
 	});
