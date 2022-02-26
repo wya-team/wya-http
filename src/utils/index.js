@@ -75,7 +75,7 @@ export const rebuildURLAndParam = (opts = {}) => {
 		let regex = /(\/?{[^?\/\&]+|\/?:[^\d][^?\/\&]+)/g;
 
 		let origin;
-		let pathAndSearch = url.replace(/[a-zA-z]+:\/\/[^\/]*/, (key) => {
+		let pathAndSearch = url.replace(/[a-zA-z]+:\/\/[^\/{]*/, (key) => {
 			origin = key || '';
 			return '';
 		});
