@@ -73,9 +73,16 @@ export const rebuildURLAndParam = (opts = {}) => {
 	 */
 	if (dynamic) {
 		let regex = /(\/?{[^?\/\&]+|\/?:[^\d][^?\/\&]+)/g;
-		if (regex.test(url)) {
+
+		let origin;
+		let pathAndSearch = url.replace(/[a-zA-z]+:\/\/[^\/]*/, (key) => {
+			origin = key || '';
+			return '';
+		});
+
+		if (regex.test(pathAndSearch)) {
 			let delTmp = [];
-			url = url.replace(regex, key => {
+			pathAndSearch = pathAndSearch.replace(regex, key => {
 				let k = key.replace(/({|}|\s|:|\/)/g, '');
 				let value = getPropByPath(param, k).value;
 				
@@ -86,6 +93,7 @@ export const rebuildURLAndParam = (opts = {}) => {
 			});
 			
 			delTmp.forEach(i => typeof param[i] !== 'undefined' && delete param[i]);
+			url = origin + pathAndSearch;
 		}
 	}
 	
