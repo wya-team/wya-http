@@ -196,7 +196,7 @@ class HttpAdapter {
 	}
 	static fetchInvoke = (options = {}) => {
 		const { debug, credentials, responseExtra, getInstance } = options;
-		const { url, headers, body, method } = HttpAdapter.getOptions(options);
+		const { url, headers, body, method, mode } = HttpAdapter.getOptions(options);
 
 		let tag = `${options.url}: ${new Date().getTime()}`;
 
@@ -247,7 +247,7 @@ class HttpAdapter {
 				body, 
 				credentials, 
 				method,
-				// TODO: mode
+				mode,
 			}).then((res = {}) => {
 				if (res.status >= 200 && res.status < 300) {
 					res.text()
@@ -272,7 +272,7 @@ class HttpAdapter {
 		});
 	}
 	static getOptions = (options = {}) => {
-		let { requestType, method } = options;
+		let { requestType, method, mode } = options;
 
 		let isJson = requestType === 'json';
 		let isFormDataJson = requestType === 'form-data:json';
@@ -335,11 +335,14 @@ class HttpAdapter {
 			}
 		}
 
+		// XMLHttpRequest 不支持 no-cors mode, 只有 fetch 支持
+		// https://stackoverflow.com/questions/68800892/how-to-add-mode-no-cors-to-xmlhttprequest
 		return {
 			url,
 			method,
 			headers,
-			body
+			body,
+			mode
 		};
 	};
 }
