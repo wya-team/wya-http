@@ -175,7 +175,7 @@ class HttpAdapter {
 			request.send(body);
 		});
 	}
-	static cancel({ request, options, reject }) {
+	static cancel({ request, options, reject, controller }) {
 		HttpHelper.remove(request);
 
 		let error = new HttpError({
@@ -186,12 +186,16 @@ class HttpAdapter {
 		options._setOver && options._setOver(error);
 		reject(error);
 
+		// xhr
 		if (request instanceof XMLHttpRequest) {
 			request.__ABORTED__ = true;
 			request.abort();
+		}
 
-			// clean up
-			request = null;
+		// fetch
+		if (controller) {
+			controller.__ABORTED__ = true;
+			controller.abort();
 		}
 	}
 	static fetchInvoke = (options = {}) => {
@@ -241,6 +245,11 @@ class HttpAdapter {
 				finallyHack();
 				request = null;
 			};
+			let controller = { signal: undefined };
+
+			if (typeof AbortController !== 'undefined') {
+				controller = new AbortController();
+			}
 							
 			request = fetch(url, { 
 				headers, 
@@ -248,6 +257,7 @@ class HttpAdapter {
 				credentials, 
 				method,
 				mode,
+				signal: controller.signal,
 			}).then((res = {}) => {
 				if (res.status >= 200 && res.status < 300) {
 					res.text()
@@ -261,10 +271,18 @@ class HttpAdapter {
 					onError(res, ERROR_CODE.HTTP_STATUS_ERROR);
 				}
 			}).catch((error) => { // 跨域或其他
-				onError({}, ERROR_CODE.HTTP_STATUS_ERROR, error);
+				// 主动取消
+				if (controller.__ABORTED__ !== true) {
+					onError({}, ERROR_CODE.HTTP_STATUS_ERROR, error);
+				}
 			});
 
-			cancel = HttpAdapter.cancel.bind(null, { options, reject });
+			cancel = HttpAdapter.cancel.bind(null, { 
+				options, 
+				reject, 
+				request,
+				controller 
+			});
 			let $param = { cancel, request, options };
 			// 用于取消
 			getInstance && getInstance($param);	
